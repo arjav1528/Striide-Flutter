@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,22 +13,17 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  // OTP controllers and focus nodes as lists
-  final List<TextEditingController> _otpControllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
+  final supabase = Supabase.instance.client;
 
   @override
   void dispose() {
-    // Clean up controllers
     _phoneController.dispose();
     for (var controller in _otpControllers) {
       controller.dispose();
     }
 
-    // Clean up focus nodes
     for (var focusNode in _otpFocusNodes) {
       focusNode.dispose();
     }
@@ -88,16 +86,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             fontFamily: "Inter",
                             fontSize: 16 * widthMultiplier,
                           ),
-                          onChanged: (val) {
+                          onChanged: (val) async {
                             if (val.length == 10) {
-                              // Handle phone number input
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Phone number entered: $val"),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
                               FocusScope.of(context).unfocus();
+                              try{
+                                await supabase.auth.signInWithOtp(
+                                  phone: "+91${_phoneController.text}",
+
+                                ).then((onValue){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text("OTP Sent to ${_phoneController.text}"),
+                                    duration: Duration(seconds: 2),
+                                  ),);
+                                });
+                              }catch(e){
+                                log("Error sending OTP: $e");
+                              }
+
                             }
                           },
                           decoration: InputDecoration(
@@ -180,7 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 event.logicalKey == LogicalKeyboardKey.backspace &&
                 controller.text.isEmpty &&
                 index > 0) {
-              // Move to previous field when backspace is pressed in an empty field
               _otpFocusNodes[index - 1].requestFocus();
               _otpControllers[index - 1].clear();
             }
@@ -202,28 +206,33 @@ class _LoginScreenState extends State<LoginScreen> {
               isDense: true,
               contentPadding: EdgeInsets.zero,
             ),
-            onChanged: (value) {
+            onChanged: (value) async {
               if (value.length == 1 && nextFocusNode != null) {
                 nextFocusNode.requestFocus();
               }
 
-              // Check if all OTP fields are filled
               bool allFilled = _otpControllers.every(
                 (controller) => controller.text.isNotEmpty,
               );
 
               if (allFilled) {
-                String otpCode =
-                    _otpControllers.map((controller) => controller.text).join();
-
-                // Show OTP entered
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("OTP entered: $otpCode"),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
                 FocusScope.of(context).unfocus();
+                String otpCode = _otpControllers.map((controller) => controller.text).join();
+                try{
+                  final supabase = Supabase.instance.client;
+                  final AuthResponse _authResponse = await supabase.auth.verifyOTP(
+                      phone: "+91${_phoneController.text}",
+                      token: otpCode,
+                      type: OtpType.sms
+                  );
+                }catch(e){
+                  log("Error verifying OTP: $e");
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("Invalid OTP. Please try again."),
+                    duration: Duration(seconds: 2),
+                  ));
+                }
+
               }
             },
           ),
