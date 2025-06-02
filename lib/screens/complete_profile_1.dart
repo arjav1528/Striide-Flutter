@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'complete_profile_2.dart';
+
 class CompleteProfile1 extends StatefulWidget {
   const CompleteProfile1({super.key});
 
@@ -360,7 +362,7 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: termsAccepted ? () {
-                      // You can add navigation to next page here
+                      // Check if required fields are filled
                       if (occupationController.text.isNotEmpty && 
                           selectedGender.isNotEmpty && 
                           selectedDate != null) {
@@ -368,7 +370,29 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                         print("Occupation: ${occupationController.text}");
                         print("Gender: $selectedGender");
                         print("Birthday: ${birthdayController.text}");
-                        // Navigate to next page
+                        
+                        // Navigate to CompleteProfile2 with right to left transition
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => 
+                              const CompleteProfile2(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+                              
+                              var tween = Tween(begin: begin, end: end).chain(
+                                CurveTween(curve: curve)
+                              );
+                              
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 300),
+                          ),
+                        );
                       }
                     } : null,
                     child: Container(
