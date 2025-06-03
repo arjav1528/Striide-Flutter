@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:striide_flutter/screens/share_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'home.dart';
@@ -373,7 +374,7 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
                         })
                             .eq('userId', Supabase.instance.client.auth.currentUser!.id)
                             .then((onValue){
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ShareScreen()));
                         }).catchError((onError){
                           debugPrint("Error updating profile: $onError");
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:striide_flutter/screens/home.dart';
 
 
 class ShareScreen extends StatefulWidget {
@@ -177,24 +178,32 @@ class _ShareScreenState extends State<ShareScreen> {
                 ),
               ),
               SizedBox(height: 220 * heightMultiplier),
-              Container(
-                height: 50*heightMultiplier,
-                width: 323*widthMultiplier,
-                decoration: BoxDecoration(
-                  color: Color(0xFF6B18D8),
-                  borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                ),
-                child: Center(
-                  child: Text("Start Striiding",
-                  textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20 * widthMultiplier,
-                      fontFamily: "Nunito",
-                      fontWeight: FontWeight.bold,
-                    ),
+              GestureDetector(
+                onTap: () {
+                  // Handle start striding action
+                  Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
+                },
+                child: Container(
+                  height: 50*heightMultiplier,
+                  width: 323*widthMultiplier,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF6B18D8),
+                    borderRadius: BorderRadius.circular(8 * widthMultiplier),
                   ),
-                )
+                  child: Center(
+                    child: Text("Start Striiding",
+                    textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20 * widthMultiplier,
+                        fontFamily: "Nunito",
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                ),
               )
             ],
           ),

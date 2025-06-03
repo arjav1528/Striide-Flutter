@@ -43,7 +43,6 @@ class _ScreenWrapperState extends State<ScreenWrapper> {
       stream: supabase.auth.onAuthStateChange,
       builder: (context, snapshot) {
 
-        return ShareScreen();
 
         if (snapshot.hasData) {
           final session = snapshot.data?.session;
