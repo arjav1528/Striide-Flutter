@@ -86,7 +86,8 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                   fontSize: 24 * widthMultiplier,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFFD4AF37),
-                  letterSpacing: 0.5
+                  letterSpacing: 0.5,
+                  fontFamily: "Montserrat"
                 ),
               ),
               SizedBox(height: 8 * heightMultiplier),
