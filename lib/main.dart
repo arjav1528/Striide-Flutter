@@ -51,12 +51,9 @@ class _ScreenWrapperState extends State<ScreenWrapper> {
 
             final isNewUser =
                 lastSignInAt != null &&
-                DateTime.parse(
-                      lastSignInAt,
-                    ).difference(DateTime.parse(createdAt)).inMinutes <
-                    2;
+                DateTime.parse(lastSignInAt).difference(DateTime.parse(createdAt)).inMinutes < 2;
 
-            return isNewUser ? CompleteProfile1() : HomeScreen();
+            return  isNewUser ? CompleteProfile1() : HomeScreen();
           } else {
             return LoginScreen();
           }
