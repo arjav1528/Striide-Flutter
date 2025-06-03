@@ -13,7 +13,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
   final supabase = Supabase.instance.client;
 
@@ -89,20 +92,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           onChanged: (val) async {
                             if (val.length == 10) {
                               FocusScope.of(context).unfocus();
-                              try{
-                                await supabase.auth.signInWithOtp(
-                                  phone: "+91${_phoneController.text}",
-
-                                ).then((onValue){
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text("OTP Sent to ${_phoneController.text}"),
-                                    duration: Duration(seconds: 2),
-                                  ),);
-                                });
-                              }catch(e){
+                              try {
+                                await supabase.auth
+                                    .signInWithOtp(
+                                      phone: "+91${_phoneController.text}",
+                                    )
+                                    .then((onValue) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            "OTP Sent to ${_phoneController.text}",
+                                          ),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    });
+                              } catch (e) {
                                 log("Error sending OTP: $e");
                               }
-
                             }
                           },
                           decoration: InputDecoration(
@@ -217,22 +226,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
               if (allFilled) {
                 FocusScope.of(context).unfocus();
-                String otpCode = _otpControllers.map((controller) => controller.text).join();
-                try{
+                String otpCode =
+                    _otpControllers.map((controller) => controller.text).join();
+                try {
                   final supabase = Supabase.instance.client;
-                  final AuthResponse _authResponse = await supabase.auth.verifyOTP(
-                      phone: "+91${_phoneController.text}",
-                      token: otpCode,
-                      type: OtpType.sms
-                  );
-                }catch(e){
+                  final AuthResponse _authResponse = await supabase.auth
+                      .verifyOTP(
+                        phone: "+91${_phoneController.text}",
+                        token: otpCode,
+                        type: OtpType.sms,
+                      );
+                  if (_authResponse.user != null) {
+                    try {
+                      final response = await supabase.from('profiles').upsert({
+                        'userId': _authResponse.user!.id,
+                        'phone': _phoneController.text,
+                        'created_at': DateTime.now().toUtc().toString(),
+                      });
+                      log("Profile created/updated successfully");
+                    } catch (e) {
+                      log("Error creating profile: $e");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error creating profile")),
+                      );
+                    }
+                  }
+                } catch (e) {
                   log("Error verifying OTP: $e");
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("Invalid OTP. Please try again."),
-                    duration: Duration(seconds: 2),
-                  ));
                 }
-
               }
             },
           ),
