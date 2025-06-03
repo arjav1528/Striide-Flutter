@@ -44,12 +44,11 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
               onPrimary: Colors.white,
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: const Color(0xFF282632),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: const Color(0xFFD4AF37),
               ),
-            ),
+            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF282632)),
           ),
           child: child!,
         );
@@ -335,7 +334,7 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                           termsAccepted = value ?? false;
                         });
                       },
-                      fillColor: MaterialStateProperty.resolveWith<Color>(
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
                         (states) => Colors.white,
                       ),
                       checkColor: Colors.black,
@@ -366,10 +365,10 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                       if (occupationController.text.isNotEmpty && 
                           selectedGender.isNotEmpty && 
                           selectedDate != null) {
-                        print("Profile information: ");
-                        print("Occupation: ${occupationController.text}");
-                        print("Gender: $selectedGender");
-                        print("Birthday: ${birthdayController.text}");
+                        debugPrint("Profile information: ");
+                        debugPrint("Occupation: ${occupationController.text}");
+                        debugPrint("Gender: $selectedGender");
+                        debugPrint("Birthday: ${birthdayController.text}");
                         
                         final response = await Supabase.instance.client.from('profiles').update({
                           'occupation': occupationController.text,
@@ -399,13 +398,13 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                           ),
                         );
                         }).catchError((error) {
-                          print("Error updating profile: $error");
+                          debugPrint("Error updating profile: $error");
                           
                         });
 
                       }
                     } : null,
-                    child: Container(
+                    child: SizedBox(
                       width: 120 * widthMultiplier,
                       height: 50 * heightMultiplier,
                       child: Row(

@@ -359,21 +359,23 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
                       if (firstNameController.text.isNotEmpty &&
                           lastNameController.text.isNotEmpty && 
                           selectedPronouns.isNotEmpty) {
-                        print("Public profile information: ");
-                        print("First Name: ${firstNameController.text}");
-                        print("Last Name: ${lastNameController.text}");
-                        print("Pronouns: $selectedPronouns");
-                        print("Bio: ${bioController.text}");
+                        debugPrint("Public profile information: ");
+                        debugPrint("First Name: ${firstNameController.text}");
+                        debugPrint("Last Name: ${lastNameController.text}");
+                        debugPrint("Pronouns: $selectedPronouns");
+                        debugPrint("Bio: ${bioController.text}");
 
                         final response = await Supabase.instance.client.from('profiles').update({
                           'first_name': firstNameController.text,
                           'last_name': lastNameController.text,
+                          'pronouns': selectedPronouns,
+                          'bio': bioController.text,
                         })
                             .eq('userId', Supabase.instance.client.auth.currentUser!.id)
                             .then((onValue){
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                         }).catchError((onError){
-                          print("Error updating profile: $onError");
+                          debugPrint("Error updating profile: $onError");
 
                         });
                       }
