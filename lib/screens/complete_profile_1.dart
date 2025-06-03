@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'complete_profile_2.dart';
 
@@ -17,7 +18,6 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
   DateTime? selectedDate;
   final TextEditingController birthdayController = TextEditingController();
   
-  // Gender options
   final List<String> genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
   
   @override
@@ -361,7 +361,7 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: termsAccepted ? () {
+                    onTap: termsAccepted ? () async {
                       // Check if required fields are filled
                       if (occupationController.text.isNotEmpty && 
                           selectedGender.isNotEmpty && 
@@ -371,8 +371,13 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                         print("Gender: $selectedGender");
                         print("Birthday: ${birthdayController.text}");
                         
-                        // Navigate to CompleteProfile2 with right to left transition
-                        Navigator.of(context).push(
+                        final response = await Supabase.instance.client.from('profiles').update({
+                          'occupation': occupationController.text,
+                          'gender': selectedGender,
+                          'birthday': birthdayController.text,
+                        })  .eq('userId', Supabase.instance.client.auth.currentUser!.id)
+                            .then((onValue){
+                          Navigator.of(context).push(
                           PageRouteBuilder(
                             pageBuilder: (context, animation, secondaryAnimation) => 
                               const CompleteProfile2(),
@@ -393,11 +398,16 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                             transitionDuration: const Duration(milliseconds: 300),
                           ),
                         );
+                        }).catchError((error) {
+                          print("Error updating profile: $error");
+                          
+                        });
+
                       }
                     } : null,
                     child: Container(
                       width: 120 * widthMultiplier,
-                      height: 16 * heightMultiplier,
+                      height: 50 * heightMultiplier,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

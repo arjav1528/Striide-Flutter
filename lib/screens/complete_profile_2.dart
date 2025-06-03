@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'home.dart';
 
 class CompleteProfile2 extends StatefulWidget {
   const CompleteProfile2({super.key});
@@ -54,7 +57,7 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
                 style: TextStyle(
                   fontSize: 24 * widthMultiplier,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFFD4AF37), // Gold color
+                  color: const Color(0xFFD4AF37),
                   letterSpacing: 0.5
                 ),
               ),
@@ -209,7 +212,6 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
                           border: InputBorder.none,
                           hintText: "What should we call you?",
                           hintStyle: TextStyle(color: Colors.grey,fontFamily: "Nunito", fontSize: 14*widthMultiplier),
-                          // Add these properties to center the text vertically
                           contentPadding: EdgeInsets.symmetric(vertical: 8*heightMultiplier),
                           isDense: true,
                         ),
@@ -268,7 +270,6 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
                           border: InputBorder.none,
                           hintText: "What should we call you?",
                           hintStyle: TextStyle(color: Colors.grey,fontFamily: "Nunito", fontSize: 14*widthMultiplier),
-                          // Add these properties to center the text vertically
                           contentPadding: EdgeInsets.symmetric(vertical: 8*heightMultiplier),
                           isDense: true,
                         ),
@@ -349,27 +350,37 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
                 ),
               ),
 
-              // Next Button (triple chevron)
               Padding(
                 padding: EdgeInsets.only(top: 130 * heightMultiplier), // Spacer
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {
-                      // Check if required fields are filled
-                      if (firstNameController.text.isNotEmpty && 
+                    onTap: () async {
+                      if (firstNameController.text.isNotEmpty &&
                           lastNameController.text.isNotEmpty && 
                           selectedPronouns.isNotEmpty) {
-                        // Navigate to next page or finish profile setup
                         print("Public profile information: ");
                         print("First Name: ${firstNameController.text}");
                         print("Last Name: ${lastNameController.text}");
                         print("Pronouns: $selectedPronouns");
                         print("Bio: ${bioController.text}");
+
+                        final response = await Supabase.instance.client.from('profiles').update({
+                          'first_name': firstNameController.text,
+                          'last_name': lastNameController.text,
+                        })
+                            .eq('userId', Supabase.instance.client.auth.currentUser!.id)
+                            .then((onValue){
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                        }).catchError((onError){
+                          print("Error updating profile: $onError");
+
+                        });
                       }
                     },
                     child: Container(
                       width: 120 * widthMultiplier,
+                      color: Colors.black,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
