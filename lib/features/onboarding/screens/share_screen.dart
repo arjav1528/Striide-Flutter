@@ -36,7 +36,7 @@ class _ShareScreenState extends State<ShareScreen> {
                 ),
               SizedBox(height: 10*heightMultiplier,),
               Center(
-                child: Container(
+                child: SizedBox(
                   width: 310*widthMultiplier,
                   child: Text("For Striide to work the way it’s meant to, your friends need to be here too. Let’s get them all on board!",
                     textAlign: TextAlign.center,
@@ -77,7 +77,7 @@ class _ShareScreenState extends State<ShareScreen> {
                           shape: BoxShape.circle
                         ),
                         child: Center(
-                          child: Container(
+                          child: SizedBox(
                             height: 25 * heightMultiplier,
                             width: 25 * widthMultiplier,
                             child: SvgPicture.asset("assets/icons/wa.svg",
@@ -118,7 +118,7 @@ class _ShareScreenState extends State<ShareScreen> {
                             shape: BoxShape.circle
                         ),
                         child: Center(
-                          child: Container(
+                          child: SizedBox(
                             height: 35 * heightMultiplier,
                             width: 35 * widthMultiplier,
                             child: SvgPicture.asset("assets/icons/mail.svg",
@@ -139,7 +139,7 @@ class _ShareScreenState extends State<ShareScreen> {
                             shape: BoxShape.circle
                         ),
                         child: Center(
-                          child: Container(
+                          child: SizedBox(
                             height: 40 * heightMultiplier,
                             width: 40 * widthMultiplier,
                             child: SvgPicture.asset("assets/icons/facebook.svg",

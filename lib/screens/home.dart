@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'login.dart';
-
+import 'package:striide_flutter/core/core.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,30 +11,41 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    AppLogger.info('HomeScreen initialized');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
+        child: StaggeredList(
+          itemDelay: const Duration(milliseconds: 200),
+          itemDuration: const Duration(milliseconds: 600),
           children: [
             SizedBox(height: 100),
-            Text(
-              "Welcome to Striide",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            FadeInWidget(
+              duration: const Duration(milliseconds: 800),
+              delay: const Duration(milliseconds: 100),
+              slideOffset: const Offset(0.0, 0.3),
+              child: Text(
+                "Welcome to Striide",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final supabase = Supabase.instance.client;
-                await supabase.auth.signOut();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-              child: Text("Logout"),
+            AnimatedButton(
+              child: ElevatedButton(
+                onPressed: () async {
+                  AppLogger.auth('User logout initiated');
+                  final supabase = Supabase.instance.client;
+                  await supabase.auth.signOut();
+                  AppLogger.auth('User logout successful');
+                  // Navigation will be handled by StreamBuilder in main.dart
+                },
+                child: Text("Logout"),
+              ),
             ),
           ],
         ),

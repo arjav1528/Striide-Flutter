@@ -2,7 +2,7 @@ name: striide_flutter
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -39,6 +39,7 @@ dependencies:
   loading_animation_widget: ^1.3.0
   intl: ^0.20.2
   flutter_svg: ^2.1.0
+  go_router: ^14.2.7
 
 dev_dependencies:
   flutter_test:
@@ -56,7 +57,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -66,7 +66,6 @@ flutter:
   assets:
     - .env
     - assets/icons/
-
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -80,16 +79,18 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-     - family: Montserrat
-       fonts:
-         - asset: assets/fonts/Montserrat-Bold.ttf
-     - family: Inter
-       fonts:
-         - asset: assets/fonts/Inter_18pt-BoldItalic.ttf
-     - family: Nunito
-       fonts:
-         - asset: assets/fonts/Nunito-Regular.ttf
-
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Bold.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter_18pt-BoldItalic.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+    - family: OoohBaby
+      fonts:
+        - asset: assets/fonts/OoohBaby-Regular.ttf
 
   #
   # For details regarding fonts from package dependencies,
