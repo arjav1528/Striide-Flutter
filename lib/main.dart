@@ -10,22 +10,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize logging
   AppLogger.info('App starting up');
 
-  // Load environment variables
   await dotenv.load(fileName: AppAssets.envFile);
   AppLogger.info('Environment variables loaded');
 
-  // Initialize Supabase
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? 'https://your-supabase-url.supabase.co',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'your-anon-key',
   );
   AppLogger.info('Supabase initialized');
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -34,8 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, constraints) {
-        // Initialize UIUtils with context
+      builder: (context, _) {
         UIUtils.init(context);
         AppLogger.info('UIUtils initialized');
 
@@ -43,7 +38,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          home: SplashWrapper(),
+          home: const SplashWrapper(),
         );
       },
     );
@@ -70,7 +65,7 @@ class _SplashWrapperState extends State<SplashWrapper> {
         AppLogger.navigation('SplashScreen', 'MainApp');
         Navigator.pushReplacement(
           context,
-          AppAnimations.fadeTransition(ScreenWrapper()),
+          AppAnimations.fadeTransition(const ScreenWrapper()),
         );
       }
     });
@@ -78,7 +73,7 @@ class _SplashWrapperState extends State<SplashWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return SplashScreen();
+    return const SplashScreen();
   }
 }
 
@@ -91,7 +86,7 @@ class ScreenWrapper extends StatefulWidget {
 
 class _ScreenWrapperState extends State<ScreenWrapper>
     with WidgetsBindingObserver {
-  final supabase = Supabase.instance.client;
+  final _supabase = Supabase.instance.client;
 
   @override
   void initState() {
@@ -113,48 +108,157 @@ class _ScreenWrapperState extends State<ScreenWrapper>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: supabase.auth.onAuthStateChange,
+    return StreamBuilder<AuthState>(
+      stream: _supabase.auth.onAuthStateChange,
       builder: (context, snapshot) {
+        AppLogger.debug(snapshot.data.toString());
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          AppLogger.info('Auth state: waiting for connection');
+          return _buildLoadingScreen();
+        }
+
+        if (snapshot.hasError) {
+          AppLogger.error('Auth state error: ${snapshot.error}');
+          return _buildErrorScreen(snapshot.error.toString());
+        }
+
         if (snapshot.hasData) {
-          final session = snapshot.data?.session;
+          final authState = snapshot.data!;
+          final event = authState.event;
+          final session = authState.session;
+
+          if (event != null) {
+            AppLogger.auth('Auth event: ${event.name}');
+          }
+
           if (session != null) {
             final currentUser = session.user;
-            final createdAt = currentUser.createdAt;
-            final lastSignInAt = currentUser.lastSignInAt;
-
             AppLogger.auth('User session found', userId: currentUser.id);
 
-            final isNewUser =
-                lastSignInAt != null &&
-                DateTime.parse(
-                      lastSignInAt,
-                    ).difference(DateTime.parse(createdAt)).inMinutes <
-                    2;
-
-            AppLogger.navigation(
-              'ScreenWrapper',
-              isNewUser ? 'CompleteProfile1' : 'HomeScreen',
-            );
-
-            return isNewUser ? CompleteProfile1() : HomeScreen();
+            return event == AuthChangeEvent.signedIn
+                ? _handleSignInEvent(currentUser)
+                : _handleExistingUserSession(currentUser);
           } else {
             AppLogger.auth('No user session found');
             AppLogger.navigation('ScreenWrapper', 'AuthScreen');
             return AuthScreen();
           }
-        } else {
-          return Center(
-            child: FadeInWidget(
-              duration: const Duration(milliseconds: 300),
-              child: LoadingAnimationWidget.staggeredDotsWave(
+        }
+
+        return _buildLoadingScreen();
+      },
+    );
+  }
+
+  Widget _handleSignInEvent(User currentUser) {
+    final createdAt = currentUser.createdAt;
+    final lastSignInAt = currentUser.lastSignInAt;
+
+    final isNewSignUp =
+        lastSignInAt != null &&
+        DateTime.parse(
+              lastSignInAt,
+            ).difference(DateTime.parse(createdAt)).inMinutes <
+            2;
+
+    AppLogger.navigation(
+      'ScreenWrapper',
+      isNewSignUp ? 'CompleteProfile1' : 'HomeScreen',
+    );
+
+    return isNewSignUp ? CompleteProfile1() : HomeScreen();
+  }
+
+  Widget _handleExistingUserSession(User currentUser) {
+    return FutureBuilder(
+      future:
+          _supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('userId', currentUser.id)
+              .single(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingScreen();
+        }
+
+        if (snapshot.hasError) {
+          AppLogger.error('Error fetching profile: ${snapshot.error}');
+          return HomeScreen();
+        }
+
+        final data = snapshot.data;
+        final hasCompletedProfile =
+            data != null &&
+            data['first_name'] != null &&
+            data['first_name'].toString().isNotEmpty;
+
+        AppLogger.navigation(
+          'ScreenWrapper',
+          hasCompletedProfile ? 'HomeScreen' : 'CompleteProfile1',
+        );
+
+        return hasCompletedProfile ? HomeScreen() : CompleteProfile1();
+      },
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Center(
+      child: FadeInWidget(
+        duration: const Duration(milliseconds: 300),
+        child: LoadingAnimationWidget.staggeredDotsWave(
+          color: Colors.white,
+          size: 50.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorScreen(String errorMessage) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF282632),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 60, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text(
+              'Authentication Error',
+              style: TextStyle(
                 color: Colors.white,
-                size: 50.0,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Inter',
               ),
             ),
-          );
-        }
-      },
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                'Please restart the app or try again later',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () async {
+                await _supabase.auth.signOut();
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    AppAnimations.fadeTransition(AuthScreen()),
+                  );
+                }
+              },
+              child: const Text('Go to Login'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -125,7 +125,7 @@ class _FadeInWidgetState extends State<FadeInWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  late Animation<Offset>? _slideAnimation;
+  Animation<Offset>? _slideAnimation; // Remove the 'late' keyword here
 
   @override
   void initState() {
