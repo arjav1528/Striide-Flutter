@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:striide_flutter/core/core.dart';
-import 'package:striide_flutter/features/login/screens/widgets/welcome_text.dart';
-import 'package:striide_flutter/features/login/screens/widgets/custom_button.dart';
+import 'package:striide_flutter/features/login/widgets/welcome_text.dart';
+import 'package:striide_flutter/features/login/widgets/custom_button.dart';
 import 'package:striide_flutter/features/login/screens/auth_screen.dart';
 
 class AuthScreen extends StatefulWidget {
