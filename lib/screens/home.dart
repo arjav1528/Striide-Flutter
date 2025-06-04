@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:striide_flutter/features/login/screens/welcome_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:striide_flutter/core/core.dart';
 
@@ -42,7 +43,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   final supabase = Supabase.instance.client;
                   await supabase.auth.signOut();
                   AppLogger.auth('User logout successful');
-                  // Navigation will be handled by StreamBuilder in main.dart
+                  if (mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      AppAnimations.fadeTransition(AuthScreen()),
+                    );
+                  }
                 },
                 child: Text("Logout"),
               ),
