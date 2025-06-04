@@ -13,12 +13,14 @@ class CompleteProfile1 extends StatefulWidget {
 }
 
 class _CompleteProfile1State extends State<CompleteProfile1> {
-  bool termsAccepted = false;
+  // Form state
   final TextEditingController occupationController = TextEditingController();
+  final TextEditingController birthdayController = TextEditingController();
   String selectedGender = '';
   DateTime? selectedDate;
-  final TextEditingController birthdayController = TextEditingController();
+  bool termsAccepted = false;
 
+  // Gender options
   final List<String> genders = [
     'Male',
     'Female',
@@ -26,11 +28,411 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
     'Prefer not to say',
   ];
 
+  // Colors from theme
+  static const Color primaryGreen = Color(0xFF00A886);
+  static const Color accentGold = Color(0xFFD4AF37);
+  static const Color safeGreen = Color(0xFF4CD964);
+  static const Color bgDark = Color(0xFF282632);
+
   @override
   void dispose() {
     occupationController.dispose();
     birthdayController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Use responsive sizing
+    final size = MediaQuery.of(context).size;
+    final heightMultiplier = size.height / 852;
+    final widthMultiplier = size.width / 393;
+
+    return Scaffold(
+      backgroundColor: bgDark,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 24.0 * widthMultiplier,
+              vertical: 16.0 * heightMultiplier,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 40 * heightMultiplier),
+                _buildHeaderSection(heightMultiplier, widthMultiplier),
+                SizedBox(height: 32 * heightMultiplier),
+                _buildFormFields(heightMultiplier, widthMultiplier),
+                SizedBox(height: 40 * heightMultiplier),
+                _buildTermsAndConditions(heightMultiplier, widthMultiplier),
+                SizedBox(height: 50 * heightMultiplier),
+                _buildNextButton(heightMultiplier, widthMultiplier),
+                SizedBox(height: 16 * heightMultiplier),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection(double heightMultiplier, double widthMultiplier) {
+    return StaggeredList(
+      itemDelay: const Duration(milliseconds: 150),
+      itemDuration: const Duration(milliseconds: 600),
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16 * widthMultiplier,
+                vertical: 8 * heightMultiplier,
+              ),
+              decoration: BoxDecoration(
+                color: accentGold.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(16 * widthMultiplier),
+              ),
+              child: Text(
+                "You're almost there!",
+                style: TextStyle(
+                  fontSize: 24 * widthMultiplier,
+                  fontWeight: FontWeight.bold,
+                  color: accentGold,
+                  letterSpacing: 0.5,
+                  fontFamily: AppTheme.primaryFontFamily,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 20 * heightMultiplier),
+        Container(
+          padding: EdgeInsets.all(12 * widthMultiplier),
+          decoration: BoxDecoration(
+            color: bgDark.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(12 * widthMultiplier),
+            border: Border.all(color: primaryGreen.withOpacity(0.3), width: 1),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.privacy_tip_outlined,
+                    color: safeGreen,
+                    size: 20 * widthMultiplier,
+                  ),
+                  SizedBox(width: 8 * widthMultiplier),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'The information below stays ',
+                        style: TextStyle(
+                          fontSize: 16 * widthMultiplier,
+                          color: Colors.white,
+                          fontFamily: AppTheme.bodyFontFamily,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'PRIVATE',
+                            style: TextStyle(
+                              color: safeGreen,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16 * widthMultiplier,
+                              fontFamily: AppTheme.bodyFontFamily,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 4 * heightMultiplier),
+              Text(
+                "and won't be visible on your profile.",
+                style: TextStyle(
+                  fontSize: 16 * widthMultiplier,
+                  color: Colors.white,
+                  fontFamily: AppTheme.bodyFontFamily,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20 * heightMultiplier),
+        Container(
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.person_outline,
+                color: primaryGreen,
+                size: 20 * widthMultiplier,
+              ),
+              SizedBox(width: 8 * widthMultiplier),
+              Text(
+                "Share a little about you!",
+                style: TextStyle(
+                  fontSize: 18 * widthMultiplier,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                  fontFamily: AppTheme.bodyFontFamily,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormFields(double heightMultiplier, double widthMultiplier) {
+    return Column(
+      children: [
+        // Occupation field
+        FadeInWidget(
+          duration: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 800),
+          slideOffset: const Offset(0.0, 0.4),
+          child: _buildFormField(
+            "Occupation",
+            occupationController,
+            "Besides changing the world",
+            heightMultiplier,
+            widthMultiplier,
+          ),
+        ),
+        SizedBox(height: 24 * heightMultiplier),
+
+        // Gender dropdown
+        FadeInWidget(
+          duration: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 1000),
+          slideOffset: const Offset(0.0, 0.4),
+          child: _buildGenderDropdown(heightMultiplier, widthMultiplier),
+        ),
+        SizedBox(height: 24 * heightMultiplier),
+
+        // Birthday field
+        FadeInWidget(
+          duration: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 1200),
+          slideOffset: const Offset(0.0, 0.4),
+          child: _buildBirthdayField(heightMultiplier, widthMultiplier),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormField(
+    String label,
+    TextEditingController controller,
+    String hintText,
+    double heightMultiplier,
+    double widthMultiplier, {
+    bool readOnly = false,
+    Widget? suffixIcon,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      height: 72 * heightMultiplier,
+      width: 329 * widthMultiplier,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12 * widthMultiplier),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Field label
+          Container(
+            height: 32 * heightMultiplier,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: 16 * widthMultiplier,
+              vertical: 6 * heightMultiplier,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12 * widthMultiplier),
+                topRight: Radius.circular(12 * widthMultiplier),
+              ),
+              color: primaryGreen,
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 14 * widthMultiplier,
+                fontWeight: FontWeight.w600,
+                fontFamily: AppTheme.bodyFontFamily,
+              ),
+            ),
+          ),
+
+          // Field input
+          SizedBox(
+            height: 40 * heightMultiplier,
+            child: TextFormField(
+              controller: controller,
+              readOnly: readOnly,
+              onTap: onTap,
+              textAlignVertical: TextAlignVertical.center,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16 * widthMultiplier,
+                ),
+                border: InputBorder.none,
+                hintText: hintText,
+                hintStyle: TextStyle(
+                  color: Colors.grey.shade400,
+                  fontFamily: AppTheme.bodyFontFamily,
+                  fontSize: 14 * widthMultiplier,
+                ),
+                suffixIcon: suffixIcon,
+              ),
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: AppTheme.bodyFontFamily,
+                fontSize: 15 * widthMultiplier,
+              ),
+              cursorColor: primaryGreen,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderDropdown(double heightMultiplier, double widthMultiplier) {
+    return Container(
+      height: 72 * heightMultiplier,
+      width: 329 * widthMultiplier,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12 * widthMultiplier),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label
+          Container(
+            height: 32 * heightMultiplier,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(
+              horizontal: 16 * widthMultiplier,
+              vertical: 6 * heightMultiplier,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12 * widthMultiplier),
+                topRight: Radius.circular(12 * widthMultiplier),
+              ),
+              color: primaryGreen,
+            ),
+            child: Text(
+              "Gender",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 14 * widthMultiplier,
+                fontWeight: FontWeight.w600,
+                fontFamily: AppTheme.bodyFontFamily,
+              ),
+            ),
+          ),
+
+          // Dropdown
+          Container(
+            height: 40 * heightMultiplier,
+            padding: EdgeInsets.symmetric(horizontal: 16 * widthMultiplier),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(12 * widthMultiplier),
+                bottomRight: Radius.circular(12 * widthMultiplier),
+              ),
+              color: Colors.white,
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: selectedGender.isNotEmpty ? selectedGender : null,
+                hint: Text(
+                  "Select your gender",
+                  style: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontFamily: AppTheme.bodyFontFamily,
+                    fontSize: 14 * widthMultiplier,
+                  ),
+                ),
+                isExpanded: true,
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: primaryGreen,
+                  size: 24 * widthMultiplier,
+                ),
+                dropdownColor: Colors.white,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedGender = newValue!;
+                  });
+                },
+                items:
+                    genders.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontFamily: AppTheme.bodyFontFamily,
+                            fontSize: 14 * widthMultiplier,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                padding: EdgeInsets.zero,
+                menuMaxHeight: 200 * heightMultiplier,
+                alignment: Alignment.centerLeft,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBirthdayField(double heightMultiplier, double widthMultiplier) {
+    return _buildFormField(
+      "Birthday",
+      birthdayController,
+      "Select your birthday",
+      heightMultiplier,
+      widthMultiplier,
+      readOnly: true,
+      suffixIcon: Icon(
+        Icons.calendar_today,
+        color: Colors.black,
+        size: 20 * widthMultiplier,
+      ),
+      onTap: () => _selectDate(context, widthMultiplier),
+    );
   }
 
   Future<void> _selectDate(BuildContext context, double widthMultiplier) async {
@@ -50,18 +452,14 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF00A886),
+              primary: primaryGreen,
               onPrimary: Colors.white,
               onSurface: Colors.white,
             ),
             textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFD4AF37),
-              ),
+              style: TextButton.styleFrom(foregroundColor: accentGold),
             ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: const Color(0xFF282632),
-            ),
+            dialogTheme: const DialogThemeData(backgroundColor: bgDark),
           ),
           child: child!,
         );
@@ -76,496 +474,155 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    double heightMultiplier = MediaQuery.of(context).size.height / 852;
-    double widthMultiplier = MediaQuery.of(context).size.width / 393;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF282632), // Dark background color
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: 24.0 * widthMultiplier,
-            vertical: 16.0 * heightMultiplier,
+  Widget _buildTermsAndConditions(
+    double heightMultiplier,
+    double widthMultiplier,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(12 * widthMultiplier),
+      decoration: BoxDecoration(
+        color: bgDark.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12 * widthMultiplier),
+        border: Border.all(color: primaryGreen.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 24 * widthMultiplier,
+            height: 24 * heightMultiplier,
+            child: Transform.scale(
+              scale: 1.2,
+              child: Checkbox(
+                value: termsAccepted,
+                onChanged: (value) {
+                  setState(() {
+                    termsAccepted = value ?? false;
+                  });
+                },
+                fillColor: WidgetStateProperty.resolveWith<Color>(
+                  (states) =>
+                      states.contains(WidgetState.selected)
+                          ? primaryGreen
+                          : Colors.white,
+                ),
+                checkColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 40 * heightMultiplier),
-              // Animated header section
-              StaggeredList(
-                itemDelay: const Duration(milliseconds: 150),
-                itemDuration: const Duration(milliseconds: 600),
-                children: [
-                  Text(
-                    "You're almost there!",
-                    style: TextStyle(
-                      fontSize: 24 * widthMultiplier,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFD4AF37),
-                      letterSpacing: 0.5,
-                      fontFamily: "Montserrat",
-                    ),
-                  ),
-                  SizedBox(height: 8 * heightMultiplier),
-                  RichText(
-                    text: TextSpan(
-                      text: 'The information below stays ',
-                      style: TextStyle(
-                        fontSize: 16 * widthMultiplier,
-                        color: Colors.white,
-                        fontFamily: "Nunito",
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'PRIVATE',
-                          style: TextStyle(
-                            color: const Color(0xFF4CD964), // Green color
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16 * widthMultiplier,
-                            fontFamily: "Nunito",
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    "and won't be visible on your profile.",
-                    style: TextStyle(
-                      fontSize: 16 * widthMultiplier,
-                      color: Colors.white,
-                      fontFamily: "Nunito",
-                    ),
-                  ),
-                  SizedBox(height: 16 * heightMultiplier),
-                  Text(
-                    "Share a little about you!",
-                    style: TextStyle(
-                      fontSize: 16 * widthMultiplier,
-                      color: Colors.white,
-                      fontFamily: "Nunito",
-                    ),
-                  ),
-                ],
+          SizedBox(width: 12 * widthMultiplier),
+          Expanded(
+            child: Text(
+              "I hereby confirm that I have read and agree to the Terms of Service and Privacy Policy.",
+              style: TextStyle(
+                fontSize: 14 * widthMultiplier,
+                color: Colors.white,
+                height: 1.4,
+                fontFamily: AppTheme.secondaryFontFamily,
               ),
-              SizedBox(height: 24 * heightMultiplier),
-
-              // Form fields with animations
-              FadeInWidget(
-                duration: const Duration(milliseconds: 700),
-                delay: const Duration(milliseconds: 800),
-                slideOffset: const Offset(0.0, 0.4),
-                child: Container(
-                  height: 69 * heightMultiplier,
-                  width: 329 * widthMultiplier,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 32 * heightMultiplier,
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                          vertical: 6 * heightMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8 * widthMultiplier),
-                            topRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Color(0xFF00A886),
-                        ),
-                        child: Text(
-                          "Occupation",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 14 * widthMultiplier,
-                            fontFamily: "Nunito",
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 37 * heightMultiplier,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(8 * widthMultiplier),
-                            bottomRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Colors.white,
-                        ),
-                        child: TextField(
-                          controller: occupationController,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Besides changing the world",
-                            hintStyle: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: "Nunito",
-                              fontSize: 14 * widthMultiplier,
-                            ),
-                            // Add these properties to center the text vertically
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8 * heightMultiplier,
-                            ),
-                            isDense: true,
-                          ),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: "Nunito",
-                            fontSize: 14 * widthMultiplier,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 24 * heightMultiplier,
-              ), // Increased from 16 to 24
-              // Gender Field with animation
-              FadeInWidget(
-                duration: const Duration(milliseconds: 700),
-                delay: const Duration(milliseconds: 1000),
-                slideOffset: const Offset(0.0, 0.4),
-                child: Container(
-                  height: 69 * heightMultiplier,
-                  width: 329 * widthMultiplier,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 32 * heightMultiplier,
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                          vertical: 6 * heightMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8 * widthMultiplier),
-                            topRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Color(0xFF00A886),
-                        ),
-                        child: Text(
-                          "Gender",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 14 * widthMultiplier,
-                            fontFamily: "Nunito",
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 37 * heightMultiplier,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(8 * widthMultiplier),
-                            bottomRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Colors.white,
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 8 * heightMultiplier,
-                            ),
-                            child: DropdownButton<String>(
-                              value:
-                                  selectedGender.isNotEmpty
-                                      ? selectedGender
-                                      : null,
-                              hint: Text(
-                                "Select your gender",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: "Nunito",
-                                  fontSize: 14 * widthMultiplier,
-                                ),
-                              ),
-
-                              isExpanded: true,
-                              icon: Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.black,
-                              ),
-                              dropdownColor: Colors.white,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  selectedGender = newValue!;
-                                });
-                              },
-                              items:
-                                  genders.map<DropdownMenuItem<String>>((
-                                    String value,
-                                  ) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontFamily: "Nunito",
-                                          fontSize: 14 * widthMultiplier,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 24 * heightMultiplier,
-              ), // Increased from 16 to 24
-              // Birthday Field
-              Container(
-                height: 69 * heightMultiplier,
-                width: 329 * widthMultiplier,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 32 * heightMultiplier,
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * widthMultiplier,
-                        vertical: 6 * heightMultiplier,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8 * widthMultiplier),
-                          topRight: Radius.circular(8 * widthMultiplier),
-                        ),
-                        color: Color(0xFF00A886),
-                      ),
-                      child: Text(
-                        "Birthday",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14 * widthMultiplier,
-                          fontFamily: "Nunito",
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 37 * heightMultiplier,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * widthMultiplier,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(8 * widthMultiplier),
-                          bottomRight: Radius.circular(8 * widthMultiplier),
-                        ),
-                        color: Colors.white,
-                      ),
-                      child: TextField(
-                        controller: birthdayController,
-                        readOnly: true,
-                        onTap: () => _selectDate(context, widthMultiplier),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Select your birthday",
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontFamily: "Nunito",
-                            fontSize: 14 * widthMultiplier,
-                          ),
-                          suffixIcon: Icon(
-                            Icons.calendar_today,
-                            color: Colors.black,
-                            size: 20 * widthMultiplier,
-                          ),
-                          // Add these properties to center the text vertically
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 8 * heightMultiplier,
-                          ),
-                          isDense: true,
-                        ),
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: "Nunito",
-                          fontSize: 14 * widthMultiplier,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 40 * heightMultiplier,
-              ), // Increased from 24 to 40
-              // Terms and Conditions Checkbox
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 24 * widthMultiplier,
-                    height: 24 * heightMultiplier,
-                    child: Checkbox(
-                      value: termsAccepted,
-                      onChanged: (value) {
-                        setState(() {
-                          termsAccepted = value ?? false;
-                        });
-                      },
-                      fillColor: WidgetStateProperty.resolveWith<Color>(
-                        (states) => Colors.white,
-                      ),
-                      checkColor: Colors.black,
-                    ),
-                  ),
-                  SizedBox(width: 8 * widthMultiplier),
-                  Expanded(
-                    child: Text(
-                      "I hereby confirm that I have read and agree to the Terms of Service and Privacy Policy.",
-                      style: TextStyle(
-                        fontSize: 14 * widthMultiplier,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Next Button (triple chevron)
-              SizedBox(height: 200 * heightMultiplier),
-              Padding(
-                padding: EdgeInsets.only(
-                  top: 24 * heightMultiplier,
-                ), // Added padding for spacing
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap:
-                        termsAccepted
-                            ? () async {
-                              // Check if required fields are filled
-                              if (occupationController.text.isNotEmpty &&
-                                  selectedGender.isNotEmpty &&
-                                  selectedDate != null) {
-                                debugPrint("Profile information: ");
-                                debugPrint(
-                                  "Occupation: ${occupationController.text}",
-                                );
-                                debugPrint("Gender: $selectedGender");
-                                debugPrint(
-                                  "Birthday: ${birthdayController.text}",
-                                );
-
-                                final response = await Supabase.instance.client
-                                    .from('profiles')
-                                    .update({
-                                      'occupation': occupationController.text,
-                                      'gender': selectedGender,
-                                      'birthday': birthdayController.text,
-                                    })
-                                    .eq(
-                                      'userId',
-                                      Supabase
-                                          .instance
-                                          .client
-                                          .auth
-                                          .currentUser!
-                                          .id,
-                                    )
-                                    .then((onValue) {
-                                      Navigator.of(context).push(
-                                        PageRouteBuilder(
-                                          pageBuilder:
-                                              (
-                                                context,
-                                                animation,
-                                                secondaryAnimation,
-                                              ) => const CompleteProfile2(),
-                                          transitionsBuilder: (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                            child,
-                                          ) {
-                                            const begin = Offset(1.0, 0.0);
-                                            const end = Offset.zero;
-                                            const curve = Curves.easeInOut;
-
-                                            var tween = Tween(
-                                              begin: begin,
-                                              end: end,
-                                            ).chain(CurveTween(curve: curve));
-
-                                            return SlideTransition(
-                                              position: animation.drive(tween),
-                                              child: child,
-                                            );
-                                          },
-                                          transitionDuration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                        ),
-                                      );
-                                    })
-                                    .catchError((error) {
-                                      debugPrint(
-                                        "Error updating profile: $error",
-                                      );
-                                    });
-                              }
-                            }
-                            : null,
-                    child: SizedBox(
-                      width: 120 * widthMultiplier,
-                      height: 50 * heightMultiplier,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Icon(
-                            Icons.chevron_right,
-                            size: 40 * widthMultiplier,
-                            color: termsAccepted ? Colors.white : Colors.grey,
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 40 * widthMultiplier,
-                            color: termsAccepted ? Colors.white : Colors.grey,
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 40 * widthMultiplier,
-                            color: termsAccepted ? Colors.white : Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16 * heightMultiplier),
-            ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextButton(double heightMultiplier, double widthMultiplier) {
+    final bool isFormValid =
+        occupationController.text.isNotEmpty &&
+        selectedGender.isNotEmpty &&
+        selectedDate != null &&
+        termsAccepted;
+
+    return GestureDetector(
+      onTap: isFormValid ? _navigateToNextScreen : null,
+      child: Container(
+        width: double.infinity,
+        height: 56 * heightMultiplier,
+        margin: EdgeInsets.symmetric(horizontal: 40 * widthMultiplier),
+        decoration: BoxDecoration(
+          color: isFormValid ? primaryGreen : Colors.grey.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(28 * heightMultiplier),
+          boxShadow:
+              isFormValid
+                  ? [
+                    BoxShadow(
+                      color: primaryGreen.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                  : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "CONTINUE",
+              style: TextStyle(
+                color: isFormValid ? Colors.white : Colors.grey,
+                fontSize: 16 * widthMultiplier,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+                fontFamily: AppTheme.primaryFontFamily,
+              ),
+            ),
+            SizedBox(width: 12 * widthMultiplier),
+            Icon(
+              Icons.arrow_forward_rounded,
+              size: 24 * widthMultiplier,
+              color: isFormValid ? Colors.white : Colors.grey,
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Future<void> _navigateToNextScreen() async {
+    try {
+      await Supabase.instance.client
+          .from('profiles')
+          .update({
+            'occupation': occupationController.text,
+            'gender': selectedGender,
+            'birthday': birthdayController.text,
+          })
+          .eq('userId', Supabase.instance.client.auth.currentUser!.id);
+
+      if (mounted) {
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) =>
+                    const CompleteProfile2(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+              var tween = Tween(
+                begin: begin,
+                end: end,
+              ).chain(CurveTween(curve: curve));
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        );
+      }
+    } catch (error) {
+      debugPrint("Error updating profile: $error");
+    }
   }
 }
