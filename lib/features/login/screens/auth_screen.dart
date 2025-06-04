@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final supabase = Supabase.instance.client;
   bool _isOtpSent = false;
   bool _isLoading = false;
-  bool _isSignUpMode =
+  final bool _isSignUpMode =
       false; 
 
   @override
@@ -576,7 +576,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     .single();
 
             final hasCompletedProfile =
-                profileData != null &&
                 profileData['first_name'] != null &&
                 profileData['first_name'].toString().isNotEmpty;
 

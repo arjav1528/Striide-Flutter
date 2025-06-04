@@ -10,11 +10,6 @@ class WelcomeText extends StatelessWidget {
     final double spacing = screenSize.height * 0.04;
 
     // Base text styles with responsive sizing
-    final baseTextStyle = TextStyle(
-      color: Colors.white,
-      fontFamily: 'Nunito',
-      fontSize: screenSize.width * 0.05,
-    );
 
     final headerStyle = TextStyle(
       fontSize: screenSize.width * 0.08,
@@ -59,7 +54,7 @@ class WelcomeText extends StatelessWidget {
         Text('Thank you', style: thanksTextStyle, textAlign: TextAlign.center),
         SizedBox(height: spacing * 0.75),
         // Main description
-        Container(
+        SizedBox(
           width: screenSize.width * 0.85,
           child: Text(
             'for joining us in building a\nconnected and aware community\nwhere we look out for each other.',
@@ -69,7 +64,7 @@ class WelcomeText extends StatelessWidget {
         ),
         SizedBox(height: spacing),
         // Beta description
-        Container(
+        SizedBox(
           width: screenSize.width * 0.85,
           child: Text(
             'During this Beta phase, we\nencourage you to share your\nfeedback, report any issues, and\nsuggest improvements.',

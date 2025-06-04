@@ -30,7 +30,6 @@ class _CompleteProfile2State extends State<CompleteProfile2> {
   // Colors from theme - matching CompleteProfile1
   static const Color primaryGreen = Color(0xFF00A886);
   static const Color accentGold = Color(0xFFD4AF37);
-  static const Color safeGreen = Color(0xFF4CD964);
   static const Color bgDark = Color(0xFF282632);
 
   @override

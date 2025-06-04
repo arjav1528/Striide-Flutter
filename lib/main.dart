@@ -128,9 +128,7 @@ class _ScreenWrapperState extends State<ScreenWrapper>
           final event = authState.event;
           final session = authState.session;
 
-          if (event != null) {
-            AppLogger.auth('Auth event: ${event.name}');
-          }
+          AppLogger.auth('Auth event: ${event.name}');
 
           if (session != null) {
             final currentUser = session.user;

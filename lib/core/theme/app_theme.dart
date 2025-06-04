@@ -4,9 +4,7 @@ import 'package:flutter/services.dart';
 class AppTheme {
   // Primary brand colors
   static const Color _primaryColor = Color(0xFF590bbe);
-  static const Color _primaryVariant = Color(0xFF4710be);
   static const Color _secondaryColor = Color(0xFF2418bc);
-  static const Color _secondaryVariant = Color(0xFF3714bd);
 
   // Gradient colors (from your gradient container)
   static const List<Color> gradientColors = [
@@ -20,21 +18,17 @@ class AppTheme {
   ];
 
   // Light theme colors
-  static const Color _lightBackground = Color(0xFFFFFBFE);
   static const Color _lightSurface = Color(0xFFFFFBFE);
   static const Color _lightOnPrimary = Colors.white;
   static const Color _lightOnSecondary = Colors.white;
-  static const Color _lightOnBackground = Color(0xFF1C1B1F);
   static const Color _lightOnSurface = Color(0xFF1C1B1F);
   static const Color _lightError = Color(0xFFBA1A1A);
   static const Color _lightOnError = Colors.white;
 
   // Dark theme colors
-  static const Color _darkBackground = Color(0xFF1C1B1F);
   static const Color _darkSurface = Color(0xFF1C1B1F);
   static const Color _darkOnPrimary = Color(0xFF1C1B1F);
   static const Color _darkOnSecondary = Color(0xFF1C1B1F);
-  static const Color _darkOnBackground = Color(0xFFE6E1E5);
   static const Color _darkOnSurface = Color(0xFFE6E1E5);
   static const Color _darkError = Color(0xFFFFB4AB);
   static const Color _darkOnError = Color(0xFF690005);
