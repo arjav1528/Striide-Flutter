@@ -15,6 +15,7 @@ export 'theme/app_theme.dart';
 
 // Utils
 export 'utils/logger.dart';
+export 'utils/logger_demo.dart';
 export 'utils/ui_utils.dart';
 export 'utils/animations.dart';
 

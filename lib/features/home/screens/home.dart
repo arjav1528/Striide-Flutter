@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:striide_flutter/core/constants/painter.dart';
+import 'package:striide_flutter/features/home/screens/map.dart';
 import 'package:striide_flutter/features/home/widgets/centerButton.dart';
 import 'package:striide_flutter/features/home/widgets/featureButton.dart';
 import 'package:striide_flutter/features/login/screens/welcome_screen.dart';
+import 'package:striide_flutter/features/profile/screens/profile_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:striide_flutter/core/core.dart';
 
@@ -60,13 +62,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     ).animate(_featurePanelFadeAnimation);
 
     // Start animations with delay
-    Future.delayed(Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         _profileButtonController.forward();
       }
     });
 
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         _featurePanelController.forward();
       }
@@ -111,38 +113,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         decoration: BoxDecoration(gradient: AppTheme.primaryGradient),
         child: Stack(
           children: [
-            // Logout button positioned at top-right
+            MapScreen(key: mapScreenKey),
+
+            // Profile button at bottom-left (responsive positioning)
             Positioned(
-              top: UIUtils.statusBarHeight + UIUtils.spacing16,
-              right: UIUtils.spacing16,
-              child: ElevatedButton(
-                onPressed: () async {
-                  AppLogger.auth('User logout initiated');
-                  final supabase = Supabase.instance.client;
-                  await supabase.auth.signOut();
-                  AppLogger.auth('User logout successful');
-                  if (mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      AppAnimations.fadeTransition(AuthScreen()),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.surface.withOpacity(0.9),
-                  foregroundColor: colorScheme.onSurface,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: UIUtils.spacing16,
-                    vertical: UIUtils.spacing8,
+              top: UIUtils.spacing32,
+              left: UIUtils.spacing20,
+              child: FadeTransition(
+                opacity: _profileButtonFadeAnimation,
+                child: SlideTransition(
+                  position: _profileButtonSlideAnimation,
+                  child: FloatingActionButton(
+                    heroTag: "profile_button",
+                    shape: CircleBorder(
+                      side: BorderSide(
+                        color: colorScheme.surface,
+                        width: UIUtils.homeProfileButtonBorderWidth,
+                      ),
+                    ),
+                    backgroundColor: colorScheme.primary,
+                    onPressed: () {
+                      AppLogger.info('Profile button pressed');
+                      AppRouter.pushNamed(context, 'profile');
+                    },
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: colorScheme.onPrimary,
+                      size: UIUtils.iconSizeLarge,
+                    ),
                   ),
                 ),
-                child: Text("Logout", style: theme.textTheme.labelLarge),
               ),
             ),
 
-            // Feature panel on the right side
+            // Feature panel on the right side (responsive positioning)
             Positioned(
-              top: UIUtils.homeFeaturePanelTopOffset,
+              bottom: UIUtils.spacing64, // Dynamic top positioning
               right: UIUtils.homeFeaturePanelRightOffset,
               child: FadeTransition(
                 opacity: _featurePanelFadeAnimation,
@@ -163,42 +169,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: Column(
                       children: [
                         UIUtils.verticalSpace20,
-                        FeatureButton("Feedback", feedbackIcon),
+                        FeatureButton("Feedback", feedbackIcon, context),
                         UIUtils.verticalSpace24,
-                        FeatureButton("Report", reportIcon),
+                        FeatureButton("Report", reportIcon, context),
                         UIUtils.verticalSpace24,
-                        CenterButton(),
+                        CenterButton(
+                          onTap: () {
+                            mapScreenKey.currentState
+                                ?.centerOnCurrentLocation();
+                          },
+                        ),
                       ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Profile button at bottom
-            Positioned(
-              bottom: UIUtils.homeProfileButtonBottomOffset,
-              right: UIUtils.homeProfileButtonRightOffset,
-              child: FadeTransition(
-                opacity: _profileButtonFadeAnimation,
-                child: SlideTransition(
-                  position: _profileButtonSlideAnimation,
-                  child: FloatingActionButton(
-                    heroTag: "profile_button",
-                    shape: CircleBorder(
-                      side: BorderSide(
-                        color: colorScheme.surface,
-                        width: UIUtils.homeProfileButtonBorderWidth,
-                      ),
-                    ),
-                    backgroundColor: colorScheme.primary,
-                    onPressed: () {
-                      AppLogger.info('Profile button pressed');
-                    },
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: colorScheme.onPrimary,
-                      size: UIUtils.iconSizeLarge,
                     ),
                   ),
                 ),

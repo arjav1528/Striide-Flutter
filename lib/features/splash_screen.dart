@@ -1,13 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:striide_flutter/core/core.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    AppLogger.info('SplashScreen displayed');
+  State<SplashScreen> createState() => _SplashScreenState();
+}
 
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AppLogger.info('SplashScreen displayed');
+    _navigateAfterDelay();
+  }
+
+  void _navigateAfterDelay() {
+    Future.delayed(Duration(milliseconds: AppConstants.splashDuration), () {
+      if (mounted) {
+        AppLogger.navigation('SplashScreen', 'AuthScreen');
+        context.go('/auth');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GradientContainer(
       child: Align(
         alignment: Alignment.center,

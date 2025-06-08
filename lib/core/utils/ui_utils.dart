@@ -72,6 +72,7 @@ class UIUtils {
   static double get spacing20 => 20.0;
   static double get spacing24 => 24.0;
   static double get spacing32 => 32.0;
+  static double get spacing30 => 30.0;
   static double get spacing48 => 48.0;
   static double get spacing64 => 64.0;
 
@@ -126,7 +127,7 @@ class UIUtils {
   static double get homeFeaturePanelTopOffset => 480.0;
   static double get homeFeaturePanelRightOffset => 0.0;
 
-  static double get homeProfileButtonBottomOffset => 770.0;
+  static double get homeProfileButtonBottomOffset => 700.0;
   static double get homeProfileButtonRightOffset => 335.0;
 
   static double get homeFeatureIconSize => 25.0;
@@ -179,6 +180,13 @@ class UIUtils {
   static Widget get horizontalSpace20 => const SizedBox(width: 20);
   static Widget get horizontalSpace24 => const SizedBox(width: 24);
   static Widget get horizontalSpace32 => const SizedBox(width: 32);
+  static Widget get horizontalSpace48 => const SizedBox(width: 48);
+  static Widget get horizontalSpace56 => const SizedBox(width: 56);
+  static Widget get horizontalSpace64 => const SizedBox(width: 64);
+  static Widget get horizontalSpace80 => const SizedBox(width: 80);
+  static Widget get horizontalSpace96 => const SizedBox(width: 96);
+  static Widget get horizontalSpace112 => const SizedBox(width: 112);
+  static Widget get horizontalSpace128 => const SizedBox(width: 128);
 
   // Dynamic spacing
   static Widget verticalSpace(double height) => SizedBox(height: height);

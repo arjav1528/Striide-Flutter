@@ -1,29 +1,113 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:striide_flutter/core/core.dart';
-import 'package:striide_flutter/features/login/screens/welcome_screen.dart';
-import 'package:striide_flutter/features/onboarding/screens/complete_profile_1.dart';
 import 'package:striide_flutter/features/onboarding/providers/onboarding_provider.dart';
-import 'package:striide_flutter/features/splash_screen.dart';
-import 'package:striide_flutter/features/home/screens/home.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AppLogger.info('App starting up');
 
-  await dotenv.load(fileName: AppAssets.envFile);
-  AppLogger.info('Environment variables loaded');
+  // Configure enhanced logger
+  AppLogger.setUseColors(true);
+  AppLogger.setUseEmojis(true);
+  AppLogger.setShowTimestamp(true);
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? 'https://your-supabase-url.supabase.co',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'your-anon-key',
+  // Startup banner
+  AppLogger.banner('STRIIDE APP STARTUP');
+
+  final startTime = DateTime.now();
+  AppLogger.lifecycle(
+    'App Initialization Started',
+    data: {
+      'platform': 'Flutter',
+      'build_mode': kDebugMode ? 'Debug' : 'Release',
+      'timestamp': startTime.toIso8601String(),
+    },
   );
-  AppLogger.info('Supabase initialized');
 
-  runApp(const MyApp());
+  try {
+    // Load environment variables
+    final envStartTime = DateTime.now();
+    await dotenv.load(fileName: AppAssets.envFile);
+    final envDuration = DateTime.now().difference(envStartTime);
+
+    AppLogger.performance('Environment Variables Load', envDuration);
+    AppLogger.success('Environment variables loaded successfully');
+
+    // Initialize Supabase
+    final supabaseStartTime = DateTime.now();
+    await Supabase.initialize(
+      url:
+          dotenv.env['SUPABASE_URL'] ?? 'https://your-supabase-url.supabase.co',
+      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'your-anon-key',
+    );
+    final supabaseDuration = DateTime.now().difference(supabaseStartTime);
+
+    AppLogger.performance('Supabase Initialization', supabaseDuration);
+    AppLogger.success('Supabase initialized successfully');
+
+    // Setup Map
+    await setupMap();
+
+    final totalDuration = DateTime.now().difference(startTime);
+    AppLogger.performance('Total App Startup', totalDuration);
+
+    AppLogger.box([
+      'Striide App Ready! 🚀',
+      'Startup Time: ${totalDuration.inMilliseconds}ms',
+      'Environment: ${kDebugMode ? 'Development' : 'Production'}',
+      'Features: All systems operational',
+    ]);
+
+    runApp(const MyApp());
+
+    // Uncomment the line below to see the enhanced logger demo in action
+    // LoggerDemo.runDemo();
+  } catch (error, stackTrace) {
+    AppLogger.exception(
+      error as Exception,
+      stackTrace,
+      context: 'App startup failed',
+      additionalData: {
+        'startup_phase': 'initialization',
+        'elapsed_time': DateTime.now().difference(startTime).inMilliseconds,
+      },
+    );
+    rethrow;
+  }
+}
+
+Future<void> setupMap() async {
+  final mapStartTime = DateTime.now();
+
+  try {
+    MapboxOptions.setAccessToken(dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '');
+    final mapDuration = DateTime.now().difference(mapStartTime);
+
+    AppLogger.performance(
+      'Mapbox Setup',
+      mapDuration,
+      metrics: {
+        'has_access_token':
+            dotenv.env['MAPBOX_ACCESS_TOKEN']?.isNotEmpty ?? false,
+        'token_length': dotenv.env['MAPBOX_ACCESS_TOKEN']?.length ?? 0,
+      },
+    );
+    AppLogger.success('Mapbox initialized successfully');
+  } catch (error, stackTrace) {
+    AppLogger.exception(
+      error as Exception,
+      stackTrace,
+      context: 'Mapbox initialization failed',
+      additionalData: {
+        'has_token': dotenv.env['MAPBOX_ACCESS_TOKEN']?.isNotEmpty ?? false,
+      },
+    );
+    rethrow;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -38,17 +122,21 @@ class MyApp extends StatelessWidget {
           UIUtils.init(context);
           AppLogger.info('UIUtils initialized');
 
-          return MaterialApp(
+          return MaterialApp.router(
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            home: const SplashWrapper(),
+            routerConfig: AppRouter.router,
           );
         },
       ),
     );
   }
 }
+
+/* 
+// These classes are no longer needed since we're using GoRouter
+// The authentication logic is now handled in the router's redirect function
 
 class SplashWrapper extends StatefulWidget {
   const SplashWrapper({super.key});
@@ -133,11 +221,27 @@ class _ScreenWrapperState extends State<ScreenWrapper>
           final event = authState.event;
           final session = authState.session;
 
-          AppLogger.auth('Auth event: ${event.name}');
+          AppLogger.auth(
+            'Auth State Change',
+            metadata: {
+              'event': event.name,
+              'session_available': session != null,
+              'timestamp': DateTime.now().toIso8601String(),
+            },
+          );
 
           if (session != null) {
             final currentUser = session.user;
-            AppLogger.auth('User session found', userId: currentUser.id);
+            AppLogger.auth(
+              'User Session Active',
+              userId: currentUser.id,
+              email: currentUser.email,
+              metadata: {
+                'session_expires_at': session.expiresAt?.toString(),
+                'provider': currentUser.appMetadata['provider'] ?? 'unknown',
+                'last_sign_in': currentUser.lastSignInAt,
+              },
+            );
 
             return event == AuthChangeEvent.signedIn
                 ? _handleSignInEvent(currentUser)
@@ -265,3 +369,4 @@ class _ScreenWrapperState extends State<ScreenWrapper>
     );
   }
 }
+*/
