@@ -120,6 +120,19 @@ class UIUtils {
     return 4.0;
   }
 
+  // Home screen specific dimensions
+  static double get homeFeaturePanelWidth => 65.0;
+  static double get homeFeaturePanelHeight => 254.0;
+  static double get homeFeaturePanelTopOffset => 480.0;
+  static double get homeFeaturePanelRightOffset => 0.0;
+
+  static double get homeProfileButtonBottomOffset => 770.0;
+  static double get homeProfileButtonRightOffset => 335.0;
+
+  static double get homeFeatureIconSize => 25.0;
+  static double get homeProfileButtonSize => 56.0;
+  static double get homeProfileButtonBorderWidth => 3.0;
+
   // Common edge insets
   static EdgeInsets get allPadding16 => const EdgeInsets.all(16.0);
   static EdgeInsets get allPadding12 => const EdgeInsets.all(12.0);

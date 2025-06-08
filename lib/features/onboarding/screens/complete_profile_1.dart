@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:striide_flutter/core/core.dart';
+import 'package:striide_flutter/features/onboarding/providers/onboarding_provider.dart';
 
 import 'complete_profile_2.dart';
 
@@ -13,27 +15,168 @@ class CompleteProfile1 extends StatefulWidget {
 }
 
 class _CompleteProfile1State extends State<CompleteProfile1> {
-  bool termsAccepted = false;
-  final TextEditingController occupationController = TextEditingController();
-  String selectedGender = '';
-  DateTime? selectedDate;
-  final TextEditingController birthdayController = TextEditingController();
-
-  final List<String> genders = [
-    'Male',
-    'Female',
-    'Non-binary',
-    'Prefer not to say',
-  ];
-
   @override
-  void dispose() {
-    occupationController.dispose();
-    birthdayController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    // Add listeners to controllers for validation
+    final provider = context.read<OnboardingProvider>();
+    provider.occupationController.addListener(
+      () => provider.validateProfile1(),
+    );
   }
 
-  Future<void> _selectDate(BuildContext context, double widthMultiplier) async {
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final heightMultiplier = size.height / 852;
+    final widthMultiplier = size.width / 393;
+
+    return Consumer<OnboardingProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF282632),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24.0 * widthMultiplier,
+                  vertical: 16.0 * heightMultiplier,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 40 * heightMultiplier),
+
+                    // Header section
+                    OnboardingHeader(
+                      title: "You're almost there!",
+                      privacyText: 'The information below stays ',
+                      highlightedText: 'PRIVATE',
+                      highlightColor: const Color(0xFF4CD964),
+                      subtitle: "and won't be visible on your profile.",
+                      icon: Icons.privacy_tip_outlined,
+                      iconColor: const Color(0xFF4CD964),
+                    ),
+
+                    SizedBox(height: 32 * heightMultiplier),
+
+                    // Form fields
+                    _buildFormFields(
+                      provider,
+                      heightMultiplier,
+                      widthMultiplier,
+                    ),
+
+                    SizedBox(height: 40 * heightMultiplier),
+
+                    // Terms and conditions
+                    FadeInWidget(
+                      duration: const Duration(milliseconds: 700),
+                      delay: const Duration(milliseconds: 1400),
+                      slideOffset: const Offset(0.0, 0.4),
+                      child: TermsCheckbox(
+                        value: provider.termsAccepted,
+                        onChanged: (value) {
+                          provider.setTermsAccepted(value ?? false);
+                        },
+                      ),
+                    ),
+
+                    SizedBox(height: 50 * heightMultiplier),
+
+                    // Continue button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FadeInWidget(
+                          duration: const Duration(milliseconds: 700),
+                          delay: const Duration(milliseconds: 1600),
+                          slideOffset: const Offset(0.0, 0.4),
+                          child: ContinueButton(
+                            isEnabled: provider.isProfile1Valid,
+                            onPressed: () => _navigateToNextScreen(provider),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 16 * heightMultiplier),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFormFields(
+    OnboardingProvider provider,
+    double heightMultiplier,
+    double widthMultiplier,
+  ) {
+    return Column(
+      children: [
+        // Occupation field
+        FadeInWidget(
+          duration: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 800),
+          slideOffset: const Offset(0.0, 0.4),
+          child: CustomFormField(
+            label: "Occupation",
+            controller: provider.occupationController,
+            hintText: "Besides changing the world",
+          ),
+        ),
+
+        SizedBox(height: 24 * heightMultiplier),
+
+        // Gender dropdown
+        FadeInWidget(
+          duration: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 1000),
+          slideOffset: const Offset(0.0, 0.4),
+          child: CustomDropdownField(
+            label: "Gender",
+            value: provider.selectedGender,
+            hintText: "Let us know who you are!",
+            options: provider.genders,
+            onChanged: (String? newValue) {
+              provider.setSelectedGender(newValue ?? '');
+            },
+          ),
+        ),
+
+        SizedBox(height: 24 * heightMultiplier),
+
+        // Birthday field
+        FadeInWidget(
+          duration: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 1200),
+          slideOffset: const Offset(0.0, 0.4),
+          child: CustomFormField(
+            label: "Birthday",
+            controller: provider.birthdayController,
+            hintText: "DD/MM/YY",
+            readOnly: true,
+            suffixIcon: Icon(
+              Icons.calendar_today,
+              color: Colors.grey.shade600,
+              size: 20 * widthMultiplier,
+            ),
+            onTap: () => _selectDate(context, provider),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _selectDate(
+    BuildContext context,
+    OnboardingProvider provider,
+  ) async {
     final DateTime now = DateTime.now();
     final DateTime eighteenYearsAgo = DateTime(
       now.year - 18,
@@ -43,7 +186,7 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? eighteenYearsAgo,
+      initialDate: provider.selectedDate ?? eighteenYearsAgo,
       firstDate: DateTime(1923),
       lastDate: eighteenYearsAgo,
       builder: (context, child) {
@@ -59,8 +202,8 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
                 foregroundColor: const Color(0xFFD4AF37),
               ),
             ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: const Color(0xFF282632),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Color(0xFF282632),
             ),
           ),
           child: child!,
@@ -68,504 +211,24 @@ class _CompleteProfile1State extends State<CompleteProfile1> {
       },
     );
 
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-        birthdayController.text = DateFormat('MMM dd, yyyy').format(picked);
-      });
+    if (picked != null && picked != provider.selectedDate) {
+      provider.setSelectedDate(picked);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    double heightMultiplier = MediaQuery.of(context).size.height / 852;
-    double widthMultiplier = MediaQuery.of(context).size.width / 393;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF282632), // Dark background color
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: 24.0 * widthMultiplier,
-            vertical: 16.0 * heightMultiplier,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 40 * heightMultiplier),
-              // Animated header section
-              StaggeredList(
-                itemDelay: const Duration(milliseconds: 150),
-                itemDuration: const Duration(milliseconds: 600),
-                children: [
-                  Text(
-                    "You're almost there!",
-                    style: TextStyle(
-                      fontSize: 24 * widthMultiplier,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFD4AF37),
-                      letterSpacing: 0.5,
-                      fontFamily: "Montserrat",
-                    ),
-                  ),
-                  SizedBox(height: 8 * heightMultiplier),
-                  RichText(
-                    text: TextSpan(
-                      text: 'The information below stays ',
-                      style: TextStyle(
-                        fontSize: 16 * widthMultiplier,
-                        color: Colors.white,
-                        fontFamily: "Nunito",
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'PRIVATE',
-                          style: TextStyle(
-                            color: const Color(0xFF4CD964), // Green color
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16 * widthMultiplier,
-                            fontFamily: "Nunito",
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    "and won't be visible on your profile.",
-                    style: TextStyle(
-                      fontSize: 16 * widthMultiplier,
-                      color: Colors.white,
-                      fontFamily: "Nunito",
-                    ),
-                  ),
-                  SizedBox(height: 16 * heightMultiplier),
-                  Text(
-                    "Share a little about you!",
-                    style: TextStyle(
-                      fontSize: 16 * widthMultiplier,
-                      color: Colors.white,
-                      fontFamily: "Nunito",
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24 * heightMultiplier),
-
-              // Form fields with animations
-              FadeInWidget(
-                duration: const Duration(milliseconds: 700),
-                delay: const Duration(milliseconds: 800),
-                slideOffset: const Offset(0.0, 0.4),
-                child: Container(
-                  height: 69 * heightMultiplier,
-                  width: 329 * widthMultiplier,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 32 * heightMultiplier,
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                          vertical: 6 * heightMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8 * widthMultiplier),
-                            topRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Color(0xFF00A886),
-                        ),
-                        child: Text(
-                          "Occupation",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 14 * widthMultiplier,
-                            fontFamily: "Nunito",
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 37 * heightMultiplier,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(8 * widthMultiplier),
-                            bottomRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Colors.white,
-                        ),
-                        child: TextField(
-                          controller: occupationController,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Besides changing the world",
-                            hintStyle: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: "Nunito",
-                              fontSize: 14 * widthMultiplier,
-                            ),
-                            // Add these properties to center the text vertically
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8 * heightMultiplier,
-                            ),
-                            isDense: true,
-                          ),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: "Nunito",
-                            fontSize: 14 * widthMultiplier,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 24 * heightMultiplier,
-              ), // Increased from 16 to 24
-              // Gender Field with animation
-              FadeInWidget(
-                duration: const Duration(milliseconds: 700),
-                delay: const Duration(milliseconds: 1000),
-                slideOffset: const Offset(0.0, 0.4),
-                child: Container(
-                  height: 69 * heightMultiplier,
-                  width: 329 * widthMultiplier,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 32 * heightMultiplier,
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                          vertical: 6 * heightMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8 * widthMultiplier),
-                            topRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Color(0xFF00A886),
-                        ),
-                        child: Text(
-                          "Gender",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 14 * widthMultiplier,
-                            fontFamily: "Nunito",
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 37 * heightMultiplier,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * widthMultiplier,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(8 * widthMultiplier),
-                            bottomRight: Radius.circular(8 * widthMultiplier),
-                          ),
-                          color: Colors.white,
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 8 * heightMultiplier,
-                            ),
-                            child: DropdownButton<String>(
-                              value:
-                                  selectedGender.isNotEmpty
-                                      ? selectedGender
-                                      : null,
-                              hint: Text(
-                                "Select your gender",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: "Nunito",
-                                  fontSize: 14 * widthMultiplier,
-                                ),
-                              ),
-
-                              isExpanded: true,
-                              icon: Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.black,
-                              ),
-                              dropdownColor: Colors.white,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  selectedGender = newValue!;
-                                });
-                              },
-                              items:
-                                  genders.map<DropdownMenuItem<String>>((
-                                    String value,
-                                  ) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(
-                                        value,
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontFamily: "Nunito",
-                                          fontSize: 14 * widthMultiplier,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 24 * heightMultiplier,
-              ), // Increased from 16 to 24
-              // Birthday Field
-              Container(
-                height: 69 * heightMultiplier,
-                width: 329 * widthMultiplier,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8 * widthMultiplier),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 32 * heightMultiplier,
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * widthMultiplier,
-                        vertical: 6 * heightMultiplier,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8 * widthMultiplier),
-                          topRight: Radius.circular(8 * widthMultiplier),
-                        ),
-                        color: Color(0xFF00A886),
-                      ),
-                      child: Text(
-                        "Birthday",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14 * widthMultiplier,
-                          fontFamily: "Nunito",
-                        ),
-                      ),
-                    ),
-                    Container(
-                      height: 37 * heightMultiplier,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * widthMultiplier,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(8 * widthMultiplier),
-                          bottomRight: Radius.circular(8 * widthMultiplier),
-                        ),
-                        color: Colors.white,
-                      ),
-                      child: TextField(
-                        controller: birthdayController,
-                        readOnly: true,
-                        onTap: () => _selectDate(context, widthMultiplier),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Select your birthday",
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontFamily: "Nunito",
-                            fontSize: 14 * widthMultiplier,
-                          ),
-                          suffixIcon: Icon(
-                            Icons.calendar_today,
-                            color: Colors.black,
-                            size: 20 * widthMultiplier,
-                          ),
-                          // Add these properties to center the text vertically
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 8 * heightMultiplier,
-                          ),
-                          isDense: true,
-                        ),
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: "Nunito",
-                          fontSize: 14 * widthMultiplier,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 40 * heightMultiplier,
-              ), // Increased from 24 to 40
-              // Terms and Conditions Checkbox
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 24 * widthMultiplier,
-                    height: 24 * heightMultiplier,
-                    child: Checkbox(
-                      value: termsAccepted,
-                      onChanged: (value) {
-                        setState(() {
-                          termsAccepted = value ?? false;
-                        });
-                      },
-                      fillColor: WidgetStateProperty.resolveWith<Color>(
-                        (states) => Colors.white,
-                      ),
-                      checkColor: Colors.black,
-                    ),
-                  ),
-                  SizedBox(width: 8 * widthMultiplier),
-                  Expanded(
-                    child: Text(
-                      "I hereby confirm that I have read and agree to the Terms of Service and Privacy Policy.",
-                      style: TextStyle(
-                        fontSize: 14 * widthMultiplier,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Next Button (triple chevron)
-              SizedBox(height: 200 * heightMultiplier),
-              Padding(
-                padding: EdgeInsets.only(
-                  top: 24 * heightMultiplier,
-                ), // Added padding for spacing
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap:
-                        termsAccepted
-                            ? () async {
-                              // Check if required fields are filled
-                              if (occupationController.text.isNotEmpty &&
-                                  selectedGender.isNotEmpty &&
-                                  selectedDate != null) {
-                                debugPrint("Profile information: ");
-                                debugPrint(
-                                  "Occupation: ${occupationController.text}",
-                                );
-                                debugPrint("Gender: $selectedGender");
-                                debugPrint(
-                                  "Birthday: ${birthdayController.text}",
-                                );
-
-                                final response = await Supabase.instance.client
-                                    .from('profiles')
-                                    .update({
-                                      'occupation': occupationController.text,
-                                      'gender': selectedGender,
-                                      'birthday': birthdayController.text,
-                                    })
-                                    .eq(
-                                      'userId',
-                                      Supabase
-                                          .instance
-                                          .client
-                                          .auth
-                                          .currentUser!
-                                          .id,
-                                    )
-                                    .then((onValue) {
-                                      Navigator.of(context).push(
-                                        PageRouteBuilder(
-                                          pageBuilder:
-                                              (
-                                                context,
-                                                animation,
-                                                secondaryAnimation,
-                                              ) => const CompleteProfile2(),
-                                          transitionsBuilder: (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                            child,
-                                          ) {
-                                            const begin = Offset(1.0, 0.0);
-                                            const end = Offset.zero;
-                                            const curve = Curves.easeInOut;
-
-                                            var tween = Tween(
-                                              begin: begin,
-                                              end: end,
-                                            ).chain(CurveTween(curve: curve));
-
-                                            return SlideTransition(
-                                              position: animation.drive(tween),
-                                              child: child,
-                                            );
-                                          },
-                                          transitionDuration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                        ),
-                                      );
-                                    })
-                                    .catchError((error) {
-                                      debugPrint(
-                                        "Error updating profile: $error",
-                                      );
-                                    });
-                              }
-                            }
-                            : null,
-                    child: SizedBox(
-                      width: 120 * widthMultiplier,
-                      height: 50 * heightMultiplier,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Icon(
-                            Icons.chevron_right,
-                            size: 40 * widthMultiplier,
-                            color: termsAccepted ? Colors.white : Colors.grey,
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 40 * widthMultiplier,
-                            color: termsAccepted ? Colors.white : Colors.grey,
-                          ),
-                          Icon(
-                            Icons.chevron_right,
-                            size: 40 * widthMultiplier,
-                            color: termsAccepted ? Colors.white : Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16 * heightMultiplier),
-            ],
-          ),
+  Future<void> _navigateToNextScreen(OnboardingProvider provider) async {
+    final success = await provider.saveProfile1();
+    if (success && mounted) {
+      Navigator.of(
+        context,
+      ).push(AppAnimations.slideTransition(const CompleteProfile2()));
+    } else if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to save profile. Please try again.'),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
+      );
+    }
   }
 }

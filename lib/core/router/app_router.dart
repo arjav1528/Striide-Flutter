@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:striide_flutter/features/login/screens/auth_screen.dart';
 import 'package:striide_flutter/features/splash_screen.dart';
-import 'package:striide_flutter/screens/home.dart';
+import 'package:striide_flutter/features/home/screens/home.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(

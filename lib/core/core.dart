@@ -20,3 +20,11 @@ export 'utils/animations.dart';
 
 // Widgets
 export 'widgets/gradient_container.dart';
+
+// Onboarding widgets
+export '../features/onboarding/widgets/onboarding_header.dart';
+export '../features/onboarding/widgets/custom_form_field.dart';
+export '../features/onboarding/widgets/custom_dropdown_field.dart';
+export '../features/onboarding/widgets/bio_button.dart';
+export '../features/onboarding/widgets/continue_button.dart';
+export '../features/onboarding/widgets/terms_checkbox.dart';
