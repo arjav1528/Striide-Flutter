@@ -12,6 +12,7 @@ import 'package:striide_flutter/features/onboarding/screens/complete_profile_2.d
 import 'package:striide_flutter/features/onboarding/screens/demo_screen.dart';
 import 'package:striide_flutter/features/onboarding/screens/share_screen.dart';
 import 'package:striide_flutter/features/feedback/screens/feedback.dart';
+import 'package:striide_flutter/features/report/screens/report.dart';
 
 class AppRouter {
   static final _supabase = Supabase.instance.client;
@@ -99,6 +100,13 @@ class AppRouter {
               Icons.settings,
             ),
       ),
+      // Add this route in the routes list
+      GoRoute(
+        path: '/report',
+        name: 'report',
+        builder: (context, state) => const ReportScreen(),
+      ),
+      // Add this method in the AppRouter class
     ],
 
     // Enhanced Error Handling
@@ -227,6 +235,12 @@ class AppRouter {
   static void goToFeedback(BuildContext context) {
     context.go('/feedback');
   }
+
+  static void goToReport(BuildContext context){
+    context.go('/report');
+  }
+
+
 
   static void goToSettings(BuildContext context) {
     context.go('/settings');
