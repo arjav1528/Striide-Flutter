@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
+import 'package:geolocator/geolocator.dart'; // For openAppSettings
 
 // Global key to access the MapScreen state
 final GlobalKey<_MapScreenState> mapScreenKey = GlobalKey<_MapScreenState>();
@@ -70,9 +71,7 @@ class _MapScreenState extends State<MapScreen> {
     });
 
     // Disable the compass
-   mapController!.compass.updateSettings(
-    mp.CompassSettings(enabled: false)
-  );
+    mapController!.compass.updateSettings(mp.CompassSettings(enabled: false));
 
     // Set dark mode using lightPreset
     mapController!.style.setStyleImportConfigProperty(
@@ -80,8 +79,6 @@ class _MapScreenState extends State<MapScreen> {
       "lightPreset",
       "night",
     );
-
-    
 
     // Disable the scale bar
     mapController?.scaleBar.updateSettings(mp.ScaleBarSettings(enabled: false));
@@ -112,23 +109,73 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Future<void> _showLocationPermissionDialog({
+    required bool deniedForever,
+  }) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Location Permission Required'),
+          content: Text(
+            deniedForever
+                ? 'Location permission is permanently denied. Please enable it in the app settings to use location features.'
+                : 'Location permission is required to use this feature. Please grant permission.',
+          ),
+          actions: [
+            if (deniedForever)
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  gl.Geolocator.openAppSettings();
+                },
+                child: Text('Open Settings'),
+              )
+            else
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await gl.Geolocator.requestPermission();
+                  _setupPositionTracking();
+                },
+                child: Text('Grant Permission'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _setupPositionTracking() async {
     try {
       bool serviceEnabled = await gl.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        setState(() {
-          _locationError = 'Location services are disabled.';
-        });
+        // Show system location services dialog instead
+        bool serviceRequested = await gl.Geolocator.openLocationSettings();
+        if (!serviceRequested) {
+          setState(() {
+            _locationError = 'Location services are disabled.';
+          });
+        }
         return;
       }
 
       gl.LocationPermission permission = await gl.Geolocator.checkPermission();
       if (permission == gl.LocationPermission.denied) {
+        // Show the native permission dialog directly
         permission = await gl.Geolocator.requestPermission();
+
+        // If still denied after request, show our custom dialog
         if (permission == gl.LocationPermission.denied) {
           setState(() {
             _locationError = 'Location permissions are denied';
           });
+          _showLocationPermissionDialog(deniedForever: false);
           return;
         }
       }
@@ -137,9 +184,11 @@ class _MapScreenState extends State<MapScreen> {
         setState(() {
           _locationError = 'Location permissions are permanently denied';
         });
+        _showLocationPermissionDialog(deniedForever: true);
         return;
       }
 
+      // Permission granted, continue with tracking
       // Clear any previous error
       setState(() {
         _locationError = null;
@@ -199,21 +248,36 @@ class _MapScreenState extends State<MapScreen> {
     try {
       print('📍 Getting current location...');
 
-      // Check location services and permissions
+      // Check location services
       bool serviceEnabled = await gl.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        print('❌ Location services disabled');
-        setState(() {
-          _locationError = 'Location services are disabled.';
-        });
-        _clearErrorAfterDelay();
+        // Try to open location settings first
+        bool serviceRequested = await gl.Geolocator.openLocationSettings();
+        if (!serviceRequested) {
+          setState(() {
+            _locationError = 'Location services are disabled.';
+          });
+          _clearErrorAfterDelay();
+        }
         return;
       }
 
       gl.LocationPermission permission = await gl.Geolocator.checkPermission();
-      if (permission == gl.LocationPermission.denied ||
-          permission == gl.LocationPermission.deniedForever) {
-        print('❌ Location permission denied: $permission');
+      if (permission == gl.LocationPermission.denied) {
+        // Show the native permission dialog directly
+        permission = await gl.Geolocator.requestPermission();
+
+        // If still denied after request, then show our custom dialog
+        if (permission == gl.LocationPermission.denied) {
+          _showLocationPermissionDialog(deniedForever: false);
+          setState(() {
+            _locationError = 'Location permission required';
+          });
+          _clearErrorAfterDelay();
+          return;
+        }
+      } else if (permission == gl.LocationPermission.deniedForever) {
+        _showLocationPermissionDialog(deniedForever: true);
         setState(() {
           _locationError = 'Location permission required';
         });
@@ -221,6 +285,7 @@ class _MapScreenState extends State<MapScreen> {
         return;
       }
 
+      // Permission granted, continue with getting location
       print('✅ Getting precise location...');
       // Get current location
       gl.Position position = await gl.Geolocator.getCurrentPosition(
