@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:striide_flutter/core/utils/ui_utils.dart';
 import 'package:striide_flutter/features/report/widgets/widgets.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  final mp.Position initialPosition;
+  ReportScreen({super.key, required this.initialPosition});
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -22,6 +24,10 @@ class _ReportScreenState extends State<ReportScreen> {
     _reportController.addListener(() {
       setState(() {}); // Rebuild to update button state
     });
+
+    // Set the location controller text to the initial position coordinates
+    _locationController.text =
+        '${widget.initialPosition.lat.toStringAsFixed(6)}, ${widget.initialPosition.lng.toStringAsFixed(6)}';
   }
 
   @override
@@ -132,9 +138,7 @@ class _ReportScreenState extends State<ReportScreen> {
               // Location Input
               Padding(
                 padding: UIUtils.horizontalPadding24,
-                child: LocationInputWidget(
-                  controller: _locationController,
-                ),
+                child: LocationInputWidget(controller: _locationController),
               ),
 
               UIUtils.verticalSpace32,
@@ -149,7 +153,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       controller: _reportController,
                       onAddMedia: _handleAddMedia,
                     ),
-                    if (_mediaFiles.isNotEmpty) ...[  
+                    if (_mediaFiles.isNotEmpty) ...[
                       UIUtils.verticalSpace12,
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -173,52 +177,61 @@ class _ReportScreenState extends State<ReportScreen> {
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
-                              children: _mediaFiles.asMap().entries.map((entry) {
-                                int index = entry.key;
-                                String fileName = entry.value;
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFff7a4b).withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: const Color(0xFFff7a4b),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.attach_file,
-                                        size: 14,
-                                        color: Colors.white.withOpacity(0.8),
+                              children:
+                                  _mediaFiles.asMap().entries.map((entry) {
+                                    int index = entry.key;
+                                    String fileName = entry.value;
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        fileName,
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
-                                          fontSize: 12,
-                                          fontFamily: 'Montserrat',
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFFff7a4b,
+                                        ).withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: const Color(0xFFff7a4b),
+                                          width: 1,
                                         ),
                                       ),
-                                      const SizedBox(width: 4),
-                                      GestureDetector(
-                                        onTap: () => _removeMedia(index),
-                                        child: Icon(
-                                          Icons.close,
-                                          size: 14,
-                                          color: Colors.white.withOpacity(0.8),
-                                        ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.attach_file,
+                                            size: 14,
+                                            color: Colors.white.withOpacity(
+                                              0.8,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            fileName,
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(
+                                                0.8,
+                                              ),
+                                              fontSize: 12,
+                                              fontFamily: 'Montserrat',
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          GestureDetector(
+                                            onTap: () => _removeMedia(index),
+                                            child: Icon(
+                                              Icons.close,
+                                              size: 14,
+                                              color: Colors.white.withOpacity(
+                                                0.8,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
+                                    );
+                                  }).toList(),
                             ),
                           ],
                         ),

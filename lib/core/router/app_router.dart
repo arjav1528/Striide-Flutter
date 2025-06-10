@@ -13,6 +13,7 @@ import 'package:striide_flutter/features/onboarding/screens/demo_screen.dart';
 import 'package:striide_flutter/features/onboarding/screens/share_screen.dart';
 import 'package:striide_flutter/features/feedback/screens/feedback.dart';
 import 'package:striide_flutter/features/report/screens/report.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 
 class AppRouter {
   static final _supabase = Supabase.instance.client;
@@ -104,7 +105,10 @@ class AppRouter {
       GoRoute(
         path: '/report',
         name: 'report',
-        builder: (context, state) => const ReportScreen(),
+        builder: (context, state) {
+          final position = state.extra as mp.Position?;
+          return ReportScreen(initialPosition: position ?? mp.Position(0, 0));
+        },
       ),
       // Add this method in the AppRouter class
     ],
@@ -236,11 +240,9 @@ class AppRouter {
     context.go('/feedback');
   }
 
-  static void goToReport(BuildContext context){
-    context.go('/report');
+  static void goToReport(BuildContext context, {mp.Position? initialPosition}) {
+    context.go('/report', extra: initialPosition);
   }
-
-
 
   static void goToSettings(BuildContext context) {
     context.go('/settings');
@@ -252,11 +254,13 @@ class AppRouter {
     String name, {
     Map<String, String>? pathParameters,
     Map<String, dynamic>? queryParameters,
+    Object? extra,
   }) {
     context.pushNamed(
       name,
       pathParameters: pathParameters ?? {},
       queryParameters: queryParameters ?? {},
+      extra: extra,
     );
   }
 

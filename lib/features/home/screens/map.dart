@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
-import 'package:geolocator/geolocator.dart'; // For openAppSettings
+import 'package:geolocator/geolocator.dart';
+import 'package:striide_flutter/core/core.dart'; // For openAppSettings
 
 // Global key to access the MapScreen state
 final GlobalKey<_MapScreenState> mapScreenKey = GlobalKey<_MapScreenState>();
@@ -20,6 +21,7 @@ class _MapScreenState extends State<MapScreen> {
   StreamSubscription? userPositionStream;
   bool _isMapInitialized = false;
   String? _locationError;
+  gl.Position? _currentPosition; // Store current position
 
   @override
   void initState() {
@@ -41,6 +43,7 @@ class _MapScreenState extends State<MapScreen> {
           mp.MapWidget(
             onMapCreated: _onMapCreated,
             key: const ValueKey("mapbox_map"),
+            onTapListener: _onMapTapped,
           ),
           if (_locationError != null)
             Positioned(
@@ -114,6 +117,75 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
     );
+  }
+
+  // Handle map tap events
+  void _onMapTapped(mp.MapContentGestureContext context) {
+    print(
+      "Map tapped at: ${context.point.coordinates.lng}, ${context.point.coordinates.lat}",
+    );
+
+    // Check if user tapped near the current location puck
+    if (_currentPosition != null) {
+      _checkLocationPuckTap(context.point);
+    }
+  }
+
+  // Check if the tap is near the current location puck
+  void _checkLocationPuckTap(mp.Point tappedPoint) {
+    if (_currentPosition == null || mapController == null) return;
+
+    // Convert current position to screen coordinates
+    mapController!
+        .pixelForCoordinate(
+          mp.Point(
+            coordinates: mp.Position(
+              _currentPosition!.longitude,
+              _currentPosition!.latitude,
+            ),
+          ),
+        )
+        .then((screenPoint) {
+          // Convert tapped point to screen coordinates
+          mapController!.pixelForCoordinate(tappedPoint).then((
+            tappedScreenPoint,
+          ) {
+            // Calculate distance between tap and location puck
+            double distance = _calculateDistance(
+              screenPoint.x,
+              screenPoint.y,
+              tappedScreenPoint.x,
+              tappedScreenPoint.y,
+            );
+
+            // If tap is within 50 pixels of the location puck, navigate
+            if (distance <= 50) {
+              print("Location puck tapped!");
+              _navigateToLocationDetails();
+            }
+          });
+        });
+  }
+
+  // Calculate distance between two screen points
+  double _calculateDistance(double x1, double y1, double x2, double y2) {
+    return ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).abs();
+  }
+
+  // Navigate to location details page
+  void _navigateToLocationDetails() {
+    if (_currentPosition != null) {
+      final position = mp.Position(
+        _currentPosition!.longitude,
+        _currentPosition!.latitude,
+      );
+      AppRouter.pushNamed(
+        context,
+        'report',
+        queryParameters: {},
+        extra: position,
+      );
+    }
   }
 
   Future<void> _showLocationPermissionDialog({
@@ -211,6 +283,11 @@ class _MapScreenState extends State<MapScreen> {
         locationSettings: locationSettings,
       ).listen(
         (gl.Position position) {
+          // Store the current position
+          setState(() {
+            _currentPosition = position;
+          });
+
           if (_isMapInitialized && mapController != null) {
             mapController?.setCamera(
               mp.CameraOptions(
@@ -302,6 +379,11 @@ class _MapScreenState extends State<MapScreen> {
         ),
       );
 
+      // Update current position
+      setState(() {
+        _currentPosition = position;
+      });
+
       print('📍 Location found: ${position.latitude}, ${position.longitude}');
 
       mp.Point currentLatLng = mp.Point(
@@ -339,3 +421,5 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 }
+
+// Example destination page
