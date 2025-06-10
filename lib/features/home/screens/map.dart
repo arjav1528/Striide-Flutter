@@ -89,12 +89,19 @@ class _MapScreenState extends State<MapScreen> {
       mp.AttributionSettings(enabled: false),
     );
 
-    // Configure location component
+    // Configure location component with purple theme color
     mapController?.location.updateSettings(
       mp.LocationComponentSettings(
         enabled: true,
         pulsingEnabled: true,
         showAccuracyRing: true,
+        // Set the purple color for the location puck
+        puckBearingEnabled: true,
+        // ignore: deprecated_member_use
+        pulsingColor: const Color(0xFF590bbe).value.toInt(),
+        pulsingMaxRadius: 45.0,
+        accuracyRingColor: const Color(0xFF590bbe).value.toInt(),
+        accuracyRingBorderColor: Colors.white.value.toInt(),
       ),
     );
 
