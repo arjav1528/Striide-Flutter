@@ -1,12 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:striide_flutter/core/core.dart';
+import 'package:geolocator/geolocator.dart' as gl;
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 
 // ignore: non_constant_identifier_names
 Widget FeatureButton(String title, CustomPaint icon, context) {
   return GestureDetector(
-    onTap: () {
+    onTap: () async {
       AppLogger.info('Feature button pressed: $title');
-      AppRouter.pushNamed(context, title.toLowerCase());
+      if (title.toLowerCase() == 'report') {
+        // Get current location before navigating to report
+        try {
+          // Check location services and request permissions
+          bool serviceEnabled = await gl.Geolocator.isLocationServiceEnabled();
+          if (!serviceEnabled) {
+            // Show location services dialog
+            await gl.Geolocator.openLocationSettings();
+            return;
+          }
+
+          gl.LocationPermission permission =
+              await gl.Geolocator.checkPermission();
+          if (permission == gl.LocationPermission.denied) {
+            permission = await gl.Geolocator.requestPermission();
+            if (permission == gl.LocationPermission.denied) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Location permission is required for reporting',
+                  ),
+                ),
+              );
+              return;
+            }
+          }
+
+          if (permission == gl.LocationPermission.deniedForever) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Location permission is permanently denied. Please enable in settings.',
+                ),
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+
+          // Get current position
+          gl.Position position = await gl.Geolocator.getCurrentPosition();
+
+          // Convert to mapbox position format
+          final mapPosition = mp.Position(
+            position.longitude,
+            position.latitude,
+          );
+
+          // Navigate to report with position
+          AppRouter.pushNamed(
+            context,
+            'report',
+            queryParameters: {},
+            extra: mapPosition,
+          );
+        } catch (error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error getting location: $error')),
+          );
+        }
+      } else {
+        AppRouter.pushNamed(context, title.toLowerCase());
+      }
     },
     child: Builder(
       builder: (context) {
