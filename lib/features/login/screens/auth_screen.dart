@@ -22,8 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final supabase = Supabase.instance.client;
   bool _isOtpSent = false;
   bool _isLoading = false;
-  final bool _isSignUpMode =
-      false; 
+  final bool _isSignUpMode = false;
 
   @override
   void initState() {
@@ -549,21 +548,24 @@ class _LoginScreenState extends State<LoginScreen> {
       if (authResponse.user != null) {
         AppLogger.auth(
           'User authenticated successfully',
-          userId: authResponse.user!.id,
+          id: authResponse.user!.id,
         );
 
         try {
           await supabase.from('profiles').upsert({
-            'userId': authResponse.user!.id,
+            'id': authResponse.user!.id,
             'phone': _phoneController.text,
-            'created_at': DateTime.now().toUtc().toString(),
+            'created_at':
+                DateTime.parse(authResponse.user!.createdAt).toIso8601String(),
+            'updated_at':
+                DateTime.parse(authResponse.user!.updatedAt!).toIso8601String(),
           });
 
           AppLogger.database('upsert', 'profiles', id: authResponse.user!.id);
 
           AppLogger.auth(
             '${_isSignUpMode ? "Sign Up" : "Sign In"} successful',
-            userId: authResponse.user!.id,
+            id: authResponse.user!.id,
           );
 
           if (mounted) {
@@ -572,7 +574,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 await supabase
                     .from('profiles')
                     .select('first_name, last_name')
-                    .eq('userId', authResponse.user!.id)
+                    .eq('id', authResponse.user!.id)
                     .single();
 
             final hasCompletedProfile =
@@ -643,7 +645,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       AppLogger.auth(
         'OTP send request initiated for ${_isSignUpMode ? "Sign Up" : "Sign In"}',
-        userId: _phoneController.text,
+        id: _phoneController.text,
       );
 
       await supabase.auth.signInWithOtp(phone: "+91${_phoneController.text}");

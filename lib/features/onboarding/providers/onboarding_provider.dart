@@ -187,9 +187,9 @@ class OnboardingProvider extends ChangeNotifier {
           .update({
             'occupation': occupationController.text,
             'gender': _selectedGender,
-            'birthday': birthdayController.text,
+            'birthday': _selectedDate?.toIso8601String(),
           })
-          .eq('userId', Supabase.instance.client.auth.currentUser!.id);
+          .eq('id', Supabase.instance.client.auth.currentUser!.id);
 
       setLoading(false);
       return true;
@@ -213,7 +213,7 @@ class OnboardingProvider extends ChangeNotifier {
             'pronouns': _selectedPronouns,
             'bio': bioController.text,
           })
-          .eq('userId', Supabase.instance.client.auth.currentUser!.id);
+          .eq('id', Supabase.instance.client.auth.currentUser!.id);
 
       setLoading(false);
       return true;

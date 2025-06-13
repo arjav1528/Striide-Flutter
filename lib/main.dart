@@ -234,7 +234,7 @@ class _ScreenWrapperState extends State<ScreenWrapper>
             final currentUser = session.user;
             AppLogger.auth(
               'User Session Active',
-              userId: currentUser.id,
+              id: currentUser.id,
               email: currentUser.email,
               metadata: {
                 'session_expires_at': session.expiresAt?.toString(),
@@ -283,7 +283,7 @@ class _ScreenWrapperState extends State<ScreenWrapper>
           _supabase
               .from('profiles')
               .select('first_name, last_name')
-              .eq('userId', currentUser.id)
+              .eq('id', currentUser.id)
               .single(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
