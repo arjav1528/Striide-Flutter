@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:striide_flutter/features/onboarding/providers/onboarding_provider.dart';
 import 'package:striide_flutter/features/onboarding/screens/demo_screen.dart';
-import 'package:striide_flutter/features/home/screens/home.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ShareScreen extends StatefulWidget {

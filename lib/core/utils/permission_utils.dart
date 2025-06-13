@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 
 class PermissionUtils {
   /// Shows a dialog explaining why a permission is needed
@@ -85,6 +87,30 @@ class PermissionUtils {
         );
       }
       return false;
+    }
+
+    return false;
+  }
+
+  /// Request appropriate media permission based on Android version
+  static Future<bool> requestMediaPermission(BuildContext context) async {
+    if (Platform.isAndroid) {
+      // For Android 13+ (API 33+), use photos permission
+      // For older versions, use storage permission
+      try {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+
+        if (androidInfo.version.sdkInt >= 33) {
+          return await requestPhotosPermission(context);
+        } else {
+          return await requestStoragePermission(context);
+        }
+      } catch (e) {
+        // Fallback to photos permission
+        return await requestPhotosPermission(context);
+      }
+    } else if (Platform.isIOS) {
+      return await requestPhotosPermission(context);
     }
 
     return false;

@@ -95,7 +95,7 @@ class AppLogger {
     final statusEmoji = _getStatusEmoji(statusCode);
 
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} NETWORK REQUEST ${statusEmoji}');
+    buffer.writeln('$emoji NETWORK REQUEST $statusEmoji');
     buffer.writeln('┌─ Method: ${_colorize(method, _brightCyan)}');
     buffer.writeln('├─ URL: ${_colorize(url, _blue)}');
 
@@ -146,7 +146,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '👤' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} USER ACTION');
+    buffer.writeln('$emoji USER ACTION');
     buffer.writeln('┌─ Action: ${_colorize(action, _brightGreen)}');
 
     if (screen != null) {
@@ -177,7 +177,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '🧭' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} NAVIGATION');
+    buffer.writeln('$emoji NAVIGATION');
     buffer.writeln('┌─ From: ${_colorize(from, _red)}');
     buffer.writeln('├─ To: ${_colorize(to, _green)}');
 
@@ -206,7 +206,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '🔐' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} AUTHENTICATION');
+    buffer.writeln('$emoji AUTHENTICATION');
     buffer.writeln('┌─ Action: ${_colorize(action, _brightMagenta)}');
 
     if (id != null) {
@@ -242,7 +242,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '🗄️' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} DATABASE');
+    buffer.writeln('$emoji DATABASE');
     buffer.writeln(
       '┌─ Operation: ${_colorize(operation.toUpperCase(), _brightYellow)}',
     );
@@ -291,7 +291,7 @@ class AppLogger {
 
     final buffer = StringBuffer();
     buffer.writeln(
-      '${emoji} PERFORMANCE ${_useEmojis ? performanceLevel : ''}',
+      '$emoji PERFORMANCE ${_useEmojis ? performanceLevel : ''}',
     );
     buffer.writeln('┌─ Operation: ${_colorize(operation, _brightBlue)}');
     buffer.writeln(
@@ -319,7 +319,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '🔄' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} APP LIFECYCLE');
+    buffer.writeln('$emoji APP LIFECYCLE');
     buffer.writeln('┌─ Event: ${_colorize(event, _brightCyan)}');
 
     if (data != null && data.isNotEmpty) {
@@ -342,7 +342,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '💾' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} MEMORY USAGE');
+    buffer.writeln('$emoji MEMORY USAGE');
 
     if (usedMB != null) {
       final memoryColor =
@@ -450,7 +450,7 @@ class AppLogger {
 
     final emoji = _useEmojis ? '💥' : '';
     final buffer = StringBuffer();
-    buffer.writeln('${emoji} EXCEPTION CAUGHT');
+    buffer.writeln('$emoji EXCEPTION CAUGHT');
     buffer.writeln(
       '┌─ Type: ${_colorize(exception.runtimeType.toString(), _brightRed)}',
     );
@@ -507,30 +507,30 @@ class AppLogger {
     // Also print to console in debug mode with enhanced formatting
     if (kDebugMode) {
       print(
-        '${_colorize('┌────────────────────────────────────────', _brightBlue)}',
+        _colorize('┌────────────────────────────────────────', _brightBlue),
       );
       print(formattedMessage);
 
       if (error != null) {
-        print('${_colorize('├─ ERROR DETAILS:', _red)}');
-        print('${_colorize('│  $error', _brightRed)}');
+        print(_colorize('├─ ERROR DETAILS:', _red));
+        print(_colorize('│  $error', _brightRed));
       }
 
       if (stackTrace != null && _showStackTrace) {
-        print('${_colorize('├─ STACK TRACE:', _red)}');
+        print(_colorize('├─ STACK TRACE:', _red));
         final stackLines = stackTrace.toString().split('\n');
         for (int i = 0; i < stackLines.length && i < 10; i++) {
-          print('${_colorize('│  ${stackLines[i]}', _yellow)}');
+          print(_colorize('│  ${stackLines[i]}', _yellow));
         }
         if (stackLines.length > 10) {
           print(
-            '${_colorize('│  ... ${stackLines.length - 10} more lines', _yellow)}',
+            _colorize('│  ... ${stackLines.length - 10} more lines', _yellow),
           );
         }
       }
 
       print(
-        '${_colorize('└────────────────────────────────────────', _brightBlue)}',
+        _colorize('└────────────────────────────────────────', _brightBlue),
       );
       print(''); // Empty line for separation
     }

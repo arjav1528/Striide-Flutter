@@ -73,17 +73,17 @@ class reportIconPainter extends CustomPainter {
     path_0.lineTo(size.width * 0.5000000, size.height * 0.9827586);
     path_0.close();
 
-    Paint paint_0_stroke =
+    Paint paint0Stroke =
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2;
-    paint_0_stroke.color = Color(0xffFFF6FF).withOpacity(1.0);
-    paint_0_stroke.strokeJoin = StrokeJoin.round;
-    canvas.drawPath(path_0, paint_0_stroke);
+    paint0Stroke.color = Color(0xffFFF6FF).withOpacity(1.0);
+    paint0Stroke.strokeJoin = StrokeJoin.round;
+    canvas.drawPath(path_0, paint0Stroke);
 
-    Paint paint_0_fill = Paint()..style = PaintingStyle.fill;
-    paint_0_fill.color = Color(0xff6b14d8).withOpacity(1.0);
-    canvas.drawPath(path_0, paint_0_fill);
+    Paint paint0Fill = Paint()..style = PaintingStyle.fill;
+    paint0Fill.color = Color(0xff6b14d8).withOpacity(1.0);
+    canvas.drawPath(path_0, paint0Fill);
 
     Path path_1 = Path();
     path_1.moveTo(size.width * 0.4230769, size.height * 0.6379724);
@@ -285,9 +285,9 @@ class reportIconPainter extends CustomPainter {
     path_1.lineTo(size.width * 0.4306154, size.height * 0.2240948);
     path_1.close();
 
-    Paint paint_1_fill = Paint()..style = PaintingStyle.fill;
-    paint_1_fill.color = Color(0xffFFF6FF).withOpacity(1.0);
-    canvas.drawPath(path_1, paint_1_fill);
+    Paint paint1Fill = Paint()..style = PaintingStyle.fill;
+    paint1Fill.color = Color(0xffFFF6FF).withOpacity(1.0);
+    canvas.drawPath(path_1, paint1Fill);
   }
 
   @override
@@ -788,9 +788,9 @@ class feedbackIconPainter extends CustomPainter {
     path_0.lineTo(size.width * 0.1235121, size.height * 0.6785696);
     path_0.close();
 
-    Paint paint_0_fill = Paint()..style = PaintingStyle.fill;
-    paint_0_fill.color = Color(0xffFFF6FF).withOpacity(1.0);
-    canvas.drawPath(path_0, paint_0_fill);
+    Paint paint0Fill = Paint()..style = PaintingStyle.fill;
+    paint0Fill.color = Color(0xffFFF6FF).withOpacity(1.0);
+    canvas.drawPath(path_0, paint0Fill);
   }
 
   @override

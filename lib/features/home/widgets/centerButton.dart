@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:striide_flutter/core/core.dart';
-import 'package:striide_flutter/features/home/screens/map.dart';
 
 // ignore: non_constant_identifier_names
 Widget CenterButton({VoidCallback? onTap}) {

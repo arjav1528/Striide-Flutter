@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:striide_flutter/core/core.dart';
 
 class ContinueButton extends StatelessWidget {
   final bool isEnabled;

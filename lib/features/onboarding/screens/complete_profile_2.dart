@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:striide_flutter/core/core.dart';
 import 'package:striide_flutter/features/onboarding/providers/onboarding_provider.dart';
 import 'package:striide_flutter/features/onboarding/screens/share_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CompleteProfile2 extends StatefulWidget {
   const CompleteProfile2({super.key});

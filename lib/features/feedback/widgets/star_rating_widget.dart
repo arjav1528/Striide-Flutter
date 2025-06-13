@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:striide_flutter/core/theme/app_theme.dart';
 import 'package:striide_flutter/core/utils/ui_utils.dart';
 
 class StarRatingWidget extends StatefulWidget {

@@ -4,6 +4,8 @@ import 'package:striide_flutter/features/feedback/widgets/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:striide_flutter/core/utils/permission_utils.dart';
 import 'package:path/path.dart' as path;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -18,7 +20,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   FeedbackCategory? _selectedCategory;
   bool? _allowContact;
   bool _isSubmitting = false;
-  List<String> _mediaFiles = [];
+  final List<String> _mediaFiles = [];
+  final List<XFile> _pickedImages = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -51,11 +54,37 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      print('🎬 Starting feedback submission...');
 
-      // Handle feedback submission logic here
-      // You can integrate with your backend/database
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+
+      print('👤 User: ${user?.id ?? 'null'}');
+
+      if (user == null) throw Exception('User not logged in');
+
+      print('📷 Images to upload: ${_pickedImages.length}');
+
+      // Upload images to Supabase storage (for archival purposes, not stored in DB)
+      if (_pickedImages.isNotEmpty) {
+        await _uploadImages(_pickedImages);
+      }
+
+      final now = DateTime.now().toUtc().toIso8601String();
+
+      print('💾 Saving to database...');
+
+      // Insert feedback into database
+      await supabase.from('feedback').insert({
+        'user_id': user.id,
+        'star_rating': _starRating,
+        'category': _selectedCategory?.name,
+        'message': _feedbackController.text.trim(),
+        'allow_contact': _allowContact,
+        'created_at': now,
+      });
+
+      print('✅ Feedback saved successfully!');
 
       // Pop the feedback screen first
       if (mounted) {
@@ -72,6 +101,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         _clearForm();
       }
     } catch (error) {
+      print('❌ Error submitting feedback: $error');
+
       // Handle error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,27 +127,40 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       _selectedCategory = null;
       _allowContact = null;
       _mediaFiles.clear();
+      _pickedImages.clear();
     });
     _feedbackController.clear();
   }
 
   Future<void> _handleAddMedia() async {
-    // Request storage permission first
-    final hasPermission = await PermissionUtils.requestStoragePermission(
-      context,
-    );
+    // Request media permission using the new method
+    final hasPermission = await PermissionUtils.requestMediaPermission(context);
+
     if (!hasPermission) return;
 
-    final picked = await _picker.pickMultiImage();
-    if (picked != null && picked.isNotEmpty) {
-      setState(() {
-        _mediaFiles.addAll(picked.map((img) => path.basename(img.path)));
-      });
+    try {
+      final picked = await _picker.pickMultiImage();
+
+      if (picked.isNotEmpty) {
+        setState(() {
+          _pickedImages.addAll(picked);
+          _mediaFiles.addAll(picked.map((img) => path.basename(img.path)));
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added ${picked.length} image(s)'),
+            backgroundColor: const Color(0xFFff7a4b),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Added ${picked.length} image(s)'),
-          backgroundColor: const Color(0xFFff7a4b),
-          duration: const Duration(seconds: 2),
+          content: Text('Error picking images: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -125,7 +169,39 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   void _removeMedia(int index) {
     setState(() {
       _mediaFiles.removeAt(index);
+      _pickedImages.removeAt(index);
     });
+  }
+
+  Future<void> _uploadImages(List<XFile> images) async {
+    final supabase = Supabase.instance.client;
+
+    print('🚀 Starting upload of ${images.length} images...');
+
+    for (final image in images) {
+      try {
+        print('📸 Processing image: ${image.path}');
+        final fileBytes = await image.readAsBytes();
+        final fileName = '${const Uuid().v4()}${path.extension(image.path)}';
+
+        print('📤 Uploading $fileName to feedback-files bucket...');
+
+        await supabase.storage
+            .from('feedback-files')
+            .uploadBinary(
+              fileName,
+              fileBytes,
+              fileOptions: const FileOptions(contentType: 'image/png'),
+            );
+
+        print('✅ Upload successful for $fileName');
+      } catch (e) {
+        // Log error but continue with other images
+        print('❌ Error uploading image: $e');
+      }
+    }
+
+    print('🎯 Upload complete');
   }
 
   @override

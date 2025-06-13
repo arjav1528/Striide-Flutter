@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:striide_flutter/core/utils/ui_utils.dart';
 
 class ReportTextFieldWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -28,10 +27,11 @@ class ReportTextFieldWidget extends StatelessWidget {
           child: Column(
             children: [
               TextField(
+                
                 controller: controller,
                 maxLines: maxLines,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontSize: 14,
                   fontFamily: 'Nunito',
                 ),
@@ -46,7 +46,7 @@ class ReportTextFieldWidget extends StatelessWidget {
                   border: InputBorder.none,
                 ),
               ),
-              if (onAddMedia != null) ...[  
+              if (onAddMedia != null) ...[
                 const Divider(
                   height: 1,
                   thickness: 1,

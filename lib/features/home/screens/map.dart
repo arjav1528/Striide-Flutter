@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
-import 'package:geolocator/geolocator.dart';
 import 'package:striide_flutter/core/core.dart'; // For openAppSettings
 
 // Global key to access the MapScreen state

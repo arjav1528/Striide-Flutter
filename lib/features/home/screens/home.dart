@@ -3,9 +3,6 @@ import 'package:striide_flutter/core/constants/painter.dart';
 import 'package:striide_flutter/features/home/screens/map.dart';
 import 'package:striide_flutter/features/home/widgets/centerButton.dart';
 import 'package:striide_flutter/features/home/widgets/featureButton.dart';
-import 'package:striide_flutter/features/login/screens/welcome_screen.dart';
-import 'package:striide_flutter/features/profile/screens/profile_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:striide_flutter/core/core.dart';
 
 class HomeScreen extends StatefulWidget {

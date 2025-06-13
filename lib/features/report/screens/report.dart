@@ -6,12 +6,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
-import 'dart:io';
 import 'package:striide_flutter/core/utils/permission_utils.dart';
 
 class ReportScreen extends StatefulWidget {
   final mp.Position initialPosition;
-  ReportScreen({super.key, required this.initialPosition});
+  const ReportScreen({super.key, required this.initialPosition});
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
@@ -21,8 +20,8 @@ class _ReportScreenState extends State<ReportScreen> {
   final TextEditingController _reportController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   bool _isSubmitting = false;
-  List<String> _mediaFiles = [];
-  List<XFile> _pickedImages = [];
+  final List<String> _mediaFiles = [];
+  final List<XFile> _pickedImages = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -106,14 +105,12 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Future<void> _handleAddMedia() async {
-    // Request storage permission first
-    final hasPermission = await PermissionUtils.requestStoragePermission(
-      context,
-    );
+    // Request media permission using the new method
+    final hasPermission = await PermissionUtils.requestMediaPermission(context);
     if (!hasPermission) return;
 
     final picked = await _picker.pickMultiImage();
-    if (picked != null && picked.isNotEmpty) {
+    if (picked.isNotEmpty) {
       setState(() {
         _pickedImages.addAll(picked);
         _mediaFiles.addAll(picked.map((img) => path.basename(img.path)));
@@ -131,27 +128,46 @@ class _ReportScreenState extends State<ReportScreen> {
   void _removeMedia(int index) {
     setState(() {
       _mediaFiles.removeAt(index);
+      _pickedImages.removeAt(index);
     });
   }
 
   Future<List<String>> _uploadImages(List<XFile> images) async {
     final supabase = Supabase.instance.client;
     final List<String> urls = [];
+
+    print('🚀 Starting upload of ${images.length} report images...');
+
     for (final image in images) {
-      final fileBytes = await image.readAsBytes();
-      final fileName = '${const Uuid().v4()}${path.extension(image.path)}';
-      await supabase.storage
-          .from('report-images')
-          .uploadBinary(
-            fileName,
-            fileBytes,
-            fileOptions: const FileOptions(contentType: 'image/png'),
-          );
-      final publicUrl = supabase.storage
-          .from('report-images')
-          .getPublicUrl(fileName);
-      urls.add(publicUrl);
+      try {
+        print('📸 Processing report image: ${image.path}');
+        final fileBytes = await image.readAsBytes();
+        final fileName = '${const Uuid().v4()}${path.extension(image.path)}';
+
+        print('📤 Uploading $fileName to report-media-files bucket...');
+
+        await supabase.storage
+            .from('report-media-files')
+            .uploadBinary(
+              fileName,
+              fileBytes,
+              fileOptions: const FileOptions(contentType: 'image/png'),
+            );
+
+        print('✅ Upload successful for $fileName');
+
+        final publicUrl = supabase.storage
+            .from('report-media-files')
+            .getPublicUrl(fileName);
+
+        urls.add(publicUrl);
+        print('🔗 Generated URL: $publicUrl');
+      } catch (e) {
+        print('❌ Error uploading report image: $e');
+      }
     }
+
+    print('🎯 Report upload complete. Generated ${urls.length} URLs');
     return urls;
   }
 
