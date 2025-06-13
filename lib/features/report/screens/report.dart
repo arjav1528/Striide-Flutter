@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:striide_flutter/core/utils/ui_utils.dart';
 import 'package:striide_flutter/features/report/widgets/widgets.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:path/path.dart' as path;
+import 'package:uuid/uuid.dart';
+import 'dart:io';
+import 'package:striide_flutter/core/utils/permission_utils.dart';
 
 class ReportScreen extends StatefulWidget {
   final mp.Position initialPosition;
@@ -16,6 +22,8 @@ class _ReportScreenState extends State<ReportScreen> {
   final TextEditingController _locationController = TextEditingController();
   bool _isSubmitting = false;
   List<String> _mediaFiles = [];
+  List<XFile> _pickedImages = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -49,28 +57,28 @@ class _ReportScreenState extends State<ReportScreen> {
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Handle report submission logic here
-      // You can integrate with your backend/database
-
-      // Pop the report screen first
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+      if (user == null) throw Exception('User not logged in');
+      final imageUrls = await _uploadImages(_pickedImages);
+      final now = DateTime.now().toUtc().toIso8601String();
+      await supabase.from('reports').insert({
+        'user_id': user.id,
+        'description': _reportController.text.trim(),
+        'media_urls': imageUrls,
+        'location': _locationController.text.trim(),
+        'created_at': now,
+      });
       if (mounted) {
         Navigator.of(context).pop();
-
-        // Then show success dialog
         Future.delayed(const Duration(milliseconds: 200), () {
           if (context.mounted) {
             showReportSuccessDialog(context);
           }
         });
-
-        // Clear form after successful submission
         _clearForm();
       }
     } catch (error) {
-      // Handle error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -91,31 +99,60 @@ class _ReportScreenState extends State<ReportScreen> {
   void _clearForm() {
     setState(() {
       _mediaFiles.clear();
+      _pickedImages.clear();
     });
     _reportController.clear();
     _locationController.clear();
   }
 
   Future<void> _handleAddMedia() async {
-    // TODO: Implement image/file picker
-    // For now, simulate adding a media file
-    setState(() {
-      _mediaFiles.add('sample_image_${_mediaFiles.length + 1}.jpg');
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Media added: ${_mediaFiles.last}'),
-        backgroundColor: const Color(0xFFff7a4b),
-        duration: const Duration(seconds: 2),
-      ),
+    // Request storage permission first
+    final hasPermission = await PermissionUtils.requestStoragePermission(
+      context,
     );
+    if (!hasPermission) return;
+
+    final picked = await _picker.pickMultiImage();
+    if (picked != null && picked.isNotEmpty) {
+      setState(() {
+        _pickedImages.addAll(picked);
+        _mediaFiles.addAll(picked.map((img) => path.basename(img.path)));
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added ${picked.length} image(s)'),
+          backgroundColor: const Color(0xFFff7a4b),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _removeMedia(int index) {
     setState(() {
       _mediaFiles.removeAt(index);
     });
+  }
+
+  Future<List<String>> _uploadImages(List<XFile> images) async {
+    final supabase = Supabase.instance.client;
+    final List<String> urls = [];
+    for (final image in images) {
+      final fileBytes = await image.readAsBytes();
+      final fileName = '${const Uuid().v4()}${path.extension(image.path)}';
+      await supabase.storage
+          .from('report-images')
+          .uploadBinary(
+            fileName,
+            fileBytes,
+            fileOptions: const FileOptions(contentType: 'image/png'),
+          );
+      final publicUrl = supabase.storage
+          .from('report-images')
+          .getPublicUrl(fileName);
+      urls.add(publicUrl);
+    }
+    return urls;
   }
 
   @override

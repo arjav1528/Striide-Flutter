@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:striide_flutter/core/utils/ui_utils.dart';
 import 'package:striide_flutter/features/feedback/widgets/widgets.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:striide_flutter/core/utils/permission_utils.dart';
+import 'package:path/path.dart' as path;
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -16,6 +19,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   bool? _allowContact;
   bool _isSubmitting = false;
   List<String> _mediaFiles = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -97,19 +101,25 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Future<void> _handleAddMedia() async {
-    // TODO: Implement image/file picker
-    // For now, simulate adding a media file
-    setState(() {
-      _mediaFiles.add('sample_image_${_mediaFiles.length + 1}.jpg');
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Media added: ${_mediaFiles.last}'),
-        backgroundColor: const Color(0xFFff7a4b),
-        duration: const Duration(seconds: 2),
-      ),
+    // Request storage permission first
+    final hasPermission = await PermissionUtils.requestStoragePermission(
+      context,
     );
+    if (!hasPermission) return;
+
+    final picked = await _picker.pickMultiImage();
+    if (picked != null && picked.isNotEmpty) {
+      setState(() {
+        _mediaFiles.addAll(picked.map((img) => path.basename(img.path)));
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Added ${picked.length} image(s)'),
+          backgroundColor: const Color(0xFFff7a4b),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _removeMedia(int index) {
