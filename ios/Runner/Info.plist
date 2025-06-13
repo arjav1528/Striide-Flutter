@@ -4,6 +4,12 @@
 <dict>
 <key>NSLocationWhenInUseUsageDescription</key>
     <string>Location required to display on map.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Access to photo library is required to select images for reports and feedback.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Camera access is required to take photos for reports and feedback.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Microphone access is required to record videos with sound.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
