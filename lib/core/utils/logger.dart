@@ -198,7 +198,7 @@ class AppLogger {
 
   static void auth(
     String action, {
-    String? userId,
+    String? id,
     String? email,
     Map<String, dynamic>? metadata,
   }) {
@@ -209,8 +209,8 @@ class AppLogger {
     buffer.writeln('${emoji} AUTHENTICATION');
     buffer.writeln('┌─ Action: ${_colorize(action, _brightMagenta)}');
 
-    if (userId != null) {
-      buffer.writeln('├─ User ID: ${_colorize(userId, _yellow)}');
+    if (id != null) {
+      buffer.writeln('├─ User ID: ${_colorize(id, _yellow)}');
     }
 
     if (email != null) {

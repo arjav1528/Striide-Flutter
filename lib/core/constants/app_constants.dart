@@ -14,7 +14,7 @@ class AppConstants {
 
   // Storage Keys
   static const String userTokenKey = 'user_token';
-  static const String userIdKey = 'user_id';
+  static const String idKey = 'user_id';
   static const String userEmailKey = 'user_email';
   static const String themeKey = 'app_theme';
   static const String languageKey = 'app_language';

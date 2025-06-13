@@ -39,7 +39,7 @@ AppRouter.goBack(context);             // Smart back navigation
 ```dart
 // Named route navigation with parameters
 AppRouter.pushNamed(context, 'profile',
-  pathParameters: {'userId': '123'},
+  pathParameters: {'id': '123'},
   queryParameters: {'tab': 'settings'}
 );
 

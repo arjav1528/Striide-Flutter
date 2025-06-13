@@ -90,7 +90,7 @@ class LoggerDemo {
     // Authentication logging
     AppLogger.auth(
       'Login Successful',
-      userId: 'user123',
+      id: 'user123',
       email: 'john@example.com',
       metadata: {
         'login_method': 'email',
