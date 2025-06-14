@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 
 class LocationInputWidget extends StatelessWidget {
   final TextEditingController controller;
+  final VoidCallback? onMapPickerPressed;
 
-  const LocationInputWidget({super.key, required this.controller});
+  const LocationInputWidget({
+    super.key,
+    required this.controller,
+    this.onMapPickerPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF3a3a42),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
@@ -18,19 +24,33 @@ class LocationInputWidget extends StatelessWidget {
           children: [
             Icon(
               Icons.location_on_outlined,
-              color: Colors.black.withOpacity(0.7),
+              color: const Color(0xFF6B18D8),
               size: 20,
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                controller.text,
+              child: TextField(
+                controller: controller,
                 style: const TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                   fontSize: 14,
                   fontFamily: 'Nunito',
                 ),
+                decoration: const InputDecoration(
+                  hintText: 'Enter location coordinates',
+                  hintStyle: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontFamily: 'Nunito',
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
               ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.map_outlined, color: Color(0xFF6B18D8)),
+              onPressed: onMapPickerPressed,
             ),
           ],
         ),

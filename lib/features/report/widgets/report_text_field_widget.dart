@@ -27,14 +27,14 @@ class ReportTextFieldWidget extends StatelessWidget {
           child: Column(
             children: [
               TextField(
-                
                 controller: controller,
                 maxLines: maxLines,
                 style: const TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                   fontSize: 14,
                   fontFamily: 'Nunito',
                 ),
+                cursorColor: Color(0xFF6B18D8),
                 decoration: InputDecoration(
                   hintText: hintText,
                   hintStyle: TextStyle(
