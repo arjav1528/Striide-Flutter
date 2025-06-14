@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart' as gl;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' as mp;
 import 'package:striide_flutter/core/core.dart'; // For openAppSettings
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Global key to access the MapScreen state
 final GlobalKey<_MapScreenState> mapScreenKey = GlobalKey<_MapScreenState>();
@@ -21,6 +25,9 @@ class _MapScreenState extends State<MapScreen> {
   bool _isMapInitialized = false;
   String? _locationError;
   gl.Position? _currentPosition; // Store current position
+  List<Map<String, dynamic>> _reportPoints = []; // Store report points
+  mp.PointAnnotationManager?
+  _pointAnnotationManager; // For managing point annotations
 
   @override
   void initState() {
@@ -32,6 +39,77 @@ class _MapScreenState extends State<MapScreen> {
   void dispose() {
     userPositionStream?.cancel();
     super.dispose();
+  }
+
+  // Fetch report points from Supabase
+  Future<void> _fetchReportPoints() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase
+          .from('reports')
+          .select('id, description, location, created_at')
+          .order('created_at', ascending: false);
+
+      setState(() {
+        _reportPoints = List<Map<String, dynamic>>.from(response);
+      });
+
+      // Add points to map if map is initialized
+      if (_isMapInitialized && mapController != null) {
+        _addPointsToMap();
+      }
+    } catch (error) {
+      print('Error fetching report points: $error');
+      if (mounted) {
+        setState(() {
+          _locationError = 'Failed to load report points';
+        });
+      }
+    }
+  }
+
+  // Add points to the map
+  Future<void> _addPointsToMap() async {
+    if (mapController == null) return;
+
+    // Create point annotation manager if not exists
+    if (_pointAnnotationManager == null) {
+      _pointAnnotationManager =
+          await mapController!.annotations.createPointAnnotationManager();
+    }
+
+    // Clear existing annotations
+    await _pointAnnotationManager?.deleteAll();
+
+    // Add new points
+    for (final point in _reportPoints) {
+      try {
+        // Parse location string (format: "latitude, longitude")
+        final locationParts = point['location'].toString().split(',');
+        log("locationParts: $locationParts");
+
+        if (locationParts.length != 2) continue;
+
+        final lat = double.tryParse(locationParts[0].trim());
+        final lng = double.tryParse(locationParts[1].trim());
+        log("Parsed coordinates: lat=$lat, lng=$lng");
+
+        if (lat == null || lng == null) continue;
+
+        // Create point annotation
+        final annotation = await _pointAnnotationManager?.create(
+          mp.PointAnnotationOptions(
+            geometry: mp.Point(coordinates: mp.Position(lng, lat)),
+            iconSize: 2.0,
+            iconColor: const Color.fromARGB(255, 4, 240, 43).value.toInt(),
+            iconAnchor: mp.IconAnchor.CENTER,
+          ),
+        );
+        log("Created annotation: $annotation");
+      } catch (e) {
+        print('Error adding point to map: $e');
+      }
+    }
   }
 
   @override
@@ -66,7 +144,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  void _onMapCreated(mp.MapboxMap mapboxMap) {
+  void _onMapCreated(mp.MapboxMap mapboxMap) async {
     setState(() {
       mapController = mapboxMap;
       _isMapInitialized = true;
@@ -116,6 +194,9 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
     );
+
+    // Fetch and display report points
+    _fetchReportPoints();
   }
 
   // Handle map tap events
